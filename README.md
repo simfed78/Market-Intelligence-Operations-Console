@@ -101,6 +101,12 @@ bash scripts/start_dashboard.sh
 .venv/bin/uvicorn app_api.main:app --reload
 ```
 
+Hosted Streamlit deployment:
+
+- repo: `simfed78/Market-Intelligence-Operations-Console`
+- branch: `main`
+- main file path: `streamlit_app.py`
+
 ## Storage And Outputs
 
 - SQLite database: `data/db/market_intelligence.db`
@@ -149,6 +155,7 @@ Add a new agent:
 - [`docs/daily_workflow.md`](docs/daily_workflow.md)
 - [`docs/weekly_workflow.md`](docs/weekly_workflow.md)
 - [`docs/dashboard_guide.md`](docs/dashboard_guide.md)
+- [`docs/streamlit_deployment.md`](docs/streamlit_deployment.md)
 - [`docs/troubleshooting.md`](docs/troubleshooting.md)
 - [`docs/git_workflow.md`](docs/git_workflow.md)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)

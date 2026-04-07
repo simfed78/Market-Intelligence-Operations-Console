@@ -25,6 +25,9 @@ from app.dashboard_data import (
     load_transition_history,
     load_what_changed,
 )
+from src.data.loaders import load_config_bundle
+from src.orchestrator.run_daily_cycle import DailyCycleRunner
+from src.orchestrator.run_weekly_cycle import WeeklyCycleRunner
 
 KPI_HELP = {
     "SPX Regime": "Sintesi del contesto per l'indice. Valori alti indicano un backdrop piu favorevole al rischio, valori bassi un contesto piu fragile o difensivo.",
@@ -415,6 +418,29 @@ def _render_exports(project_root: Path) -> None:
         st.write(path.name)
 
 
+def _generate_payload(project_root: Path, weekly: bool) -> None:
+    """Generate a payload for first-run or hosted deployments."""
+    config = load_config_bundle(project_root / "config")
+    if weekly:
+        WeeklyCycleRunner(config=config, project_root=project_root).run()
+    else:
+        DailyCycleRunner(config=config, project_root=project_root).run(run_type="sample")
+
+
+def _ensure_payload(project_root: Path, weekly: bool) -> dict:
+    """Load a payload and bootstrap one when missing."""
+    payload = load_payload(project_root, weekly=weekly)
+    if payload:
+        return payload
+
+    st.info("No saved payload found yet. Generating a sample research snapshot for the dashboard.")
+    if st.button("Generate dashboard data", type="primary", use_container_width=False):
+        with st.spinner("Running the research engine and building the initial payload..."):
+            _generate_payload(project_root, weekly=weekly)
+        st.rerun()
+    return {}
+
+
 def main() -> None:
     """Render the local dashboard."""
     project_root = PROJECT_ROOT
@@ -426,9 +452,8 @@ def main() -> None:
         "Page",
         ["Overview", "What Changed", "Baskets", "Exposure", "Proxy Health", "Run History", "Alerts", "Exports"],
     )
-    payload = load_payload(project_root, weekly=run_type == "weekly")
+    payload = _ensure_payload(project_root, weekly=run_type == "weekly")
     if not payload:
-        st.warning("No payload found. Run the engine first.")
         return
     _mode_badge(run_type, str(payload.get("timestamp", "n/a")))
 
