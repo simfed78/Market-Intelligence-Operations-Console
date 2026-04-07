@@ -150,6 +150,31 @@ Add a new agent:
 - [`docs/weekly_workflow.md`](docs/weekly_workflow.md)
 - [`docs/dashboard_guide.md`](docs/dashboard_guide.md)
 - [`docs/troubleshooting.md`](docs/troubleshooting.md)
+- [`docs/git_workflow.md`](docs/git_workflow.md)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md)
+
+## Git Workflow
+
+Recommended day-to-day flow:
+
+```bash
+git checkout main
+git pull --ff-only
+git checkout -b feature/short-description
+make preflight
+```
+
+Helpful local commands:
+
+- `make status`
+- `make test`
+- `make preflight`
+
+The repository also includes:
+
+- `.gitattributes` for line-ending normalization
+- `.editorconfig` for consistent editing defaults
+- PR and issue templates under `.github/`
 
 ## Known Limitations
 
