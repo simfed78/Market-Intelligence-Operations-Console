@@ -1,0 +1,19 @@
+mode: hybrid
+
+sector_constituents:
+  XLK: [AAPL, MSFT, NVDA, AVGO, ORCL, CRM, AMD]
+  XLF: [JPM, BAC, WFC, GS, MS, BLK, C]
+  XLE: [XOM, CVX, COP, SLB, EOG, MPC]
+  XLI: [GE, CAT, RTX, DE, UPS, HON]
+  XLY: [AMZN, TSLA, HD, MCD, BKNG, LOW]
+  XLV: [LLY, UNH, JNJ, MRK, ABBV, TMO]
+  XLP: [PG, KO, COST, WMT, PEP]
+  XLU: [NEE, SO, DUK, AEP]
+  XLB: [LIN, SHW, APD, FCX]
+  XLRE: [PLD, AMT, EQIX, O]
+  XLC: [GOOG, META, NFLX, DIS]
+
+equal_weight_proxies:
+  XLK: RSP
+  XLF: RSP
+  XLE: RSP

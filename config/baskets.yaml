@@ -1,0 +1,35 @@
+storage:
+  basket_snapshot_dir: outputs/exports/baskets
+
+baskets:
+  top_sector:
+    source: sector
+    max_names: 5
+    min_score: 45
+    weighting: equal
+  top_cyclical:
+    source: cyclical
+    max_names: 5
+    min_score: 40
+    weighting: score
+  defensive:
+    tickers: [XLP, XLU, XLV, GLD, SHY]
+    max_names: 5
+    weighting: equal
+  risk_on:
+    tickers: [XLK, XLI, XLF, XLY, IWM]
+    max_names: 5
+    weighting: score
+  risk_off:
+    tickers: [XLU, XLP, XLV, TLT, GLD]
+    max_names: 5
+    weighting: equal
+  high_conviction_watch:
+    source: opportunity
+    max_names: 8
+    min_score: 50
+    weighting: score
+
+controls:
+  max_single_weight: 0.35
+  min_names: 3

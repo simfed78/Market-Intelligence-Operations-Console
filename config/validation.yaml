@@ -1,0 +1,30 @@
+windows:
+  rolling: [20, 60, 120]
+  walk_forward_train: 126
+  walk_forward_test: 21
+  bootstrap_samples: 50
+  max_lag: 10
+
+targets:
+  spy_forward_returns: [1, 5, 20]
+  sector_relative_performance: [5, 20]
+  cyclical_opportunity_quality: [5, 20]
+
+regimes:
+  macro:
+    positive_growth_threshold: 55
+    inflation_pressure_threshold: 60
+  liquidity:
+    easy_threshold: 55
+    tight_threshold: 45
+  volatility:
+    high_vol_threshold: 0.22
+    low_vol_threshold: 0.14
+  market_state:
+    bullish_threshold: 0.0
+
+change_point:
+  enabled: true
+  methods: [binseg, rolling_mean_shift]
+  min_size: 20
+  jump: 5

@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+.env
+logs/
+data/db/
+data/cache/
+data/processed/snapshots/
+outputs/exports/
+outputs/json/
+outputs/reports/
+outputs/tables/
+outputs/html/

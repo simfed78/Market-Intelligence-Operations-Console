@@ -1,0 +1,22 @@
+sectors:
+  XLK:
+    key_names: [AAPL, MSFT, NVDA, AVGO]
+    earnings_cluster_tags: [megacap_tech, semis]
+  XLF:
+    key_names: [JPM, GS, BAC, MS]
+    earnings_cluster_tags: [banks, brokers]
+  XLY:
+    key_names: [AMZN, TSLA, HD, MCD]
+    earnings_cluster_tags: [consumer]
+  XLI:
+    key_names: [CAT, GE, UPS, RTX]
+    earnings_cluster_tags: [industrials]
+  XLE:
+    key_names: [XOM, CVX, SLB, COP]
+    earnings_cluster_tags: [energy]
+  SOXX:
+    key_names: [NVDA, AMD, AVGO, QCOM]
+    earnings_cluster_tags: [semis]
+
+manual_calendar_csv: data/raw/earnings_calendar.csv
+manual_revision_csv: data/raw/earnings_revision_proxy.csv

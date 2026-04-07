@@ -1,0 +1,27 @@
+growth:
+  claims: ICSA
+  unemployment_rate: UNRATE
+  payrolls: PAYEMS
+  industrial_production: INDPRO
+  retail_sales: RSAFS
+  pmi_proxy: AMTMNO
+
+inflation:
+  cpi: CPIAUCSL
+  core_cpi: CPILFESL
+  ppi: PPIACO
+  breakeven_5y: T5YIE
+
+policy_liquidity:
+  fed_funds: FEDFUNDS
+  reserves: TOTRESNS
+  fed_balance_sheet: WALCL
+  nfci: NFCI
+  real_yield_10y: DFII10
+
+rates_credit:
+  gs2: GS2
+  gs10: GS10
+  baa_aaa_spread: BAA10Y
+  hy_oas: BAMLH0A0HYM2
+  ig_oas: BAMLC0A0CM

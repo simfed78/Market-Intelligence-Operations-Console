@@ -1,0 +1,49 @@
+core_index:
+  - SPY
+  - QQQ
+  - IWM
+  - DIA
+  - RSP
+
+sectors:
+  - XLB
+  - XLE
+  - XLF
+  - XLI
+  - XLK
+  - XLP
+  - XLU
+  - XLV
+  - XLY
+  - XLRE
+  - XLC
+
+cyclical_detail:
+  - ITB
+  - XHB
+  - XME
+  - KRE
+  - IYT
+  - SOXX
+
+rates_bonds_credit:
+  - TLT
+  - IEF
+  - SHY
+  - HYG
+  - LQD
+
+commodities_cross_asset:
+  - GLD
+  - CPER
+  - USO
+  - UUP
+
+volatility_sentiment:
+  - ^VIX
+  - VIXY
+
+manual_series:
+  - PUT_CALL
+  - SKEW
+  - GAMMA_PROXY

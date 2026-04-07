@@ -1,0 +1,35 @@
+events:
+  - name: CPI
+    category: inflation
+    importance: high
+    source: manual
+  - name: PPI
+    category: inflation
+    importance: medium
+    source: manual
+  - name: NFP
+    category: labor
+    importance: high
+    source: manual
+  - name: ISM Manufacturing
+    category: manufacturing
+    importance: high
+    source: manual
+  - name: Retail Sales
+    category: growth
+    importance: medium
+    source: manual
+  - name: Jobless Claims
+    category: labor
+    importance: medium
+    source: manual
+  - name: FOMC
+    category: central_bank
+    importance: high
+    source: manual
+
+windows:
+  pre_event_days: 2
+  post_event_days: [1, 3, 5]
+
+manual_calendar_csv: data/raw/macro_events.csv

@@ -1,0 +1,18 @@
+thresholds:
+  proxy_improvement: 8
+  proxy_deterioration: 8
+  sector_state_shift: 10
+  breadth_improves_ahead_of_price: 6
+  event_risk_high: 65
+  options_structure_unstable: 60
+  cyclical_activation: 60
+
+levels:
+  info: 25
+  watch: 45
+  actionable_research: 60
+  warning: 75
+
+watchlist:
+  max_daily_items: 12
+  max_weekly_items: 20

@@ -1,0 +1,29 @@
+spx:
+  technical_improvement: 0.18
+  breadth_improvement: 0.15
+  macro_alignment: 0.15
+  liquidity_alignment: 0.14
+  proxy_confirmation: 0.12
+  event_context: 0.08
+  options_context: 0.10
+  anti_crowding: 0.08
+
+sector:
+  relative_strength_improvement: 0.18
+  internal_breadth: 0.18
+  technical_state: 0.16
+  earnings_tone: 0.12
+  macro_alignment: 0.10
+  options_context: 0.08
+  event_context: 0.08
+  proxy_confirmation: 0.10
+
+cyclical:
+  relative_strength_improvement: 0.20
+  internal_breadth: 0.18
+  technical_state: 0.18
+  liquidity_alignment: 0.14
+  earnings_tone: 0.10
+  event_context: 0.08
+  options_context: 0.06
+  anti_crowding: 0.06

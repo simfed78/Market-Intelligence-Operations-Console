@@ -1,0 +1,19 @@
+thresholds:
+  offensive: 70
+  moderately_offensive: 60
+  neutral: 50
+  selective_risk: 42
+
+modifiers:
+  high_event_risk_penalty: 10
+  unstable_options_penalty: 12
+  strong_breadth_bonus: 6
+  fragile_market_penalty: 8
+
+labels:
+  - offensive
+  - moderately_offensive
+  - neutral
+  - selective_risk
+  - defensive
+  - capital_preservation

@@ -1,0 +1,28 @@
+fusion:
+  macro: 0.22
+  liquidity: 0.18
+  cross_asset: 0.12
+  sentiment: 0.14
+  seasonality: 0.06
+  technical: 0.10
+  sector: 0.18
+
+sector_ranking:
+  trend_quality: 0.18
+  momentum_persistence: 0.16
+  relative_strength_persistence: 0.16
+  internal_breadth: 0.10
+  macro_alignment: 0.10
+  liquidity_alignment: 0.10
+  sentiment_confirmation: 0.08
+  seasonality_context: 0.04
+  proxy_stability: 0.08
+
+technical_structure:
+  moving_average_state: 0.20
+  rsi_balance: 0.15
+  macd: 0.15
+  adx: 0.15
+  breakout_context: 0.15
+  realized_volatility: 0.10
+  relative_volume: 0.10

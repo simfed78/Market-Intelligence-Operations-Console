@@ -1,0 +1,17 @@
+mode: public_proxy
+
+public_proxies:
+  vix_symbol: ^VIX
+  vvix_symbol: VVIX
+  term_structure_symbols: [^VIX, VIXY]
+  manual_csv: data/raw/options_proxy_manual.csv
+
+manual_fields:
+  - date
+  - put_call
+  - skew
+  - gamma_flip
+  - call_wall
+  - put_wall
+  - expected_move
+  - dealer_positioning

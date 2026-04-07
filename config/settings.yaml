@@ -1,0 +1,47 @@
+project:
+  name: market_intelligence_engine
+  timezone: America/New_York
+  benchmark: SPY
+  sector_benchmark: SPY
+  cyclical_group: [XLE, XLI, XLB, XME, KRE, IYT, ITB, XHB, SOXX]
+
+run:
+  default_market_period: 2y
+  frequency: 1d
+  correlation_windows: [20, 60, 120]
+  lead_lag_max_lag: 10
+  cache_ttl_hours: 12
+  use_sample_data_on_failure: true
+
+scoring:
+  fusion_weights:
+    macro: 0.24
+    liquidity: 0.20
+    cross_asset: 0.14
+    sentiment: 0.16
+    seasonality: 0.08
+    sector: 0.18
+  regime_thresholds:
+    bullish: 65
+    neutral: 45
+    risk_off: 35
+  sector_states:
+    early_leadership: 70
+    confirmed_leadership: 80
+    crowded: 60
+    weak: 40
+
+calendar:
+  recurring_events:
+    - name: CPI
+      rule: monthly_mid
+    - name: FOMC
+      rule: manual_placeholder
+    - name: NFP
+      rule: first_friday
+    - name: OPEX
+      rule: third_friday
+
+files:
+  manual_sentiment_csv: data/raw/manual_sentiment.csv
+  event_calendar_csv: data/raw/event_calendar.csv

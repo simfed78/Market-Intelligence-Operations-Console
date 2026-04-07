@@ -1,0 +1,10 @@
+defaults:
+  page_title: Market Intelligence Dashboard
+  benchmark: SPY
+  default_timeframe_days: 252
+  default_proxy_limit: 15
+  default_sector_limit: 12
+
+filters:
+  regimes: [all, risk_on, neutral, risk_off]
+  timeframes: [63, 126, 252, 504]

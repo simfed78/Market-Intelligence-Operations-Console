@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "market-intelligence-engine"
+version = "0.1.0"
+description = "Research engine for SPX500 regime, sector rotation, and cyclical opportunity analysis."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pandas>=2.2.0",
+  "numpy>=1.26.0",
+  "yfinance>=0.2.54",
+  "fredapi>=0.5.2",
+  "PyYAML>=6.0.1",
+  "pandas-ta-classic>=0.3.14b0",
+  "scipy>=1.12.0",
+  "python-dateutil>=2.9.0",
+  "streamlit>=1.44.0",
+  "plotly>=6.0.0",
+  "ruptures>=1.1.9",
+  "fastapi>=0.115.0",
+  "uvicorn>=0.34.0",
+  "httpx>=0.28.0",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -1,0 +1,51 @@
+XLB:
+  name: Materials
+  style: cyclical
+XLE:
+  name: Energy
+  style: cyclical
+XLF:
+  name: Financials
+  style: cyclical
+XLI:
+  name: Industrials
+  style: cyclical
+XLK:
+  name: Technology
+  style: growth
+XLP:
+  name: Consumer Staples
+  style: defensive
+XLU:
+  name: Utilities
+  style: defensive
+XLV:
+  name: Health Care
+  style: defensive
+XLY:
+  name: Consumer Discretionary
+  style: cyclical
+XLRE:
+  name: Real Estate
+  style: rate_sensitive
+XLC:
+  name: Communication Services
+  style: growth
+ITB:
+  name: Homebuilders
+  style: cyclical_detail
+XHB:
+  name: Homebuilders Broad
+  style: cyclical_detail
+XME:
+  name: Metals and Mining
+  style: cyclical_detail
+KRE:
+  name: Regional Banks
+  style: cyclical_detail
+IYT:
+  name: Transportation
+  style: cyclical_detail
+SOXX:
+  name: Semiconductors
+  style: cyclical_detail

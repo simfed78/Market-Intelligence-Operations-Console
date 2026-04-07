@@ -1,0 +1,9 @@
+backtest:
+  default_rebalance: weekly
+  friction_bps: 10
+  benchmark: SPY
+  windows: [20, 60, 120]
+
+baskets:
+  equal_weight: true
+  score_weighted: true

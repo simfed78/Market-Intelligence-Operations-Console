@@ -1,0 +1,31 @@
+proxies:
+  - ticker: HYG
+    category: credit
+    use_cases: [spy_direction, sector_confirmation, cyclical_quality]
+  - ticker: LQD
+    category: investment_grade_credit
+    use_cases: [credit_spread_confirmation]
+  - ticker: TLT
+    category: duration
+    use_cases: [rates_regime, risk_off]
+  - ticker: IEF
+    category: rates
+    use_cases: [curve_confirmation]
+  - ticker: GLD
+    category: commodity_defensive
+    use_cases: [risk_off, inflation]
+  - ticker: CPER
+    category: commodity_cyclical
+    use_cases: [growth_proxy, cyclical_quality]
+  - ticker: USO
+    category: energy
+    use_cases: [inflation, cyclical_rotation]
+  - ticker: UUP
+    category: dollar
+    use_cases: [liquidity_tightness, risk_off]
+  - ticker: RSP
+    category: breadth
+    use_cases: [internal_confirmation]
+  - ticker: QQQ
+    category: growth_leadership
+    use_cases: [risk_on, sector_rotation]
