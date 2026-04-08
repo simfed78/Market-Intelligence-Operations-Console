@@ -488,8 +488,9 @@ def _render_agent_narratives(agent_results: dict) -> None:
         cols = st.columns(len(row))
         for col, agent_name in zip(cols, row, strict=False):
             result = agent_results[agent_name]
-            title, framing = _agent_narrative(agent_name, result.summary)
-            tone, color = _agent_tone(result.summary)
+            summary = result.get("summary", "") if isinstance(result, dict) else getattr(result, "summary", "")
+            title, framing = _agent_narrative(agent_name, summary)
+            tone, color = _agent_tone(summary)
             col.markdown(
                 f"""
                 <div style="border:1px solid #d0d5dd;border-radius:12px;padding:14px 16px;background:#ffffff;min-height:180px;">
@@ -498,7 +499,7 @@ def _render_agent_narratives(agent_results: dict) -> None:
                     <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:{color};color:white;font-size:12px;font-weight:700;">{tone}</span>
                   </div>
                   <div style="font-size:13px;color:#475467;margin-bottom:10px;line-height:1.45;">{framing}</div>
-                  <div style="font-size:14px;color:#344054;line-height:1.55;">{result.summary}</div>
+                  <div style="font-size:14px;color:#344054;line-height:1.55;">{summary}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
