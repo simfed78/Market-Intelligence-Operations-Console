@@ -53,6 +53,81 @@ SECTION_HELP = {
 }
 
 
+def _inject_responsive_styles() -> None:
+    """Apply dashboard styles tuned for smaller screens."""
+    st.markdown(
+        """
+        <style>
+        .stApp [data-testid="stAppViewContainer"] {
+          background: #fcfcf9;
+        }
+
+        .stApp h1, .stApp h2, .stApp h3 {
+          letter-spacing: -0.02em;
+        }
+
+        .stApp [data-testid="stMetric"] {
+          border: 1px solid #e4e7ec;
+          border-radius: 14px;
+          padding: 0.65rem 0.8rem;
+          background: #ffffff;
+        }
+
+        .stApp [data-testid="stDataFrame"] {
+          border-radius: 12px;
+          overflow: hidden;
+        }
+
+        .stApp [data-testid="stSidebar"] {
+          border-right: 1px solid #e4e7ec;
+        }
+
+        @media (max-width: 900px) {
+          .stApp .block-container {
+            padding-top: 1rem;
+            padding-left: 0.85rem;
+            padding-right: 0.85rem;
+            padding-bottom: 2rem;
+          }
+
+          .stApp h1 {
+            font-size: 2rem;
+            line-height: 1.1;
+          }
+
+          .stApp h2 {
+            font-size: 1.55rem;
+          }
+
+          .stApp h3 {
+            font-size: 1.2rem;
+          }
+
+          .stApp p, .stApp li, .stApp label, .stApp [data-testid="stCaptionContainer"] {
+            font-size: 0.95rem;
+            line-height: 1.45;
+          }
+
+          .stApp [data-testid="stHorizontalBlock"] {
+            gap: 0.7rem;
+          }
+
+          .stApp [data-testid="column"] {
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+          }
+
+          .stApp button[kind="secondary"],
+          .stApp button[kind="primary"] {
+            width: 100%;
+          }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def load_payload(project_root: Path, weekly: bool = False) -> dict:
     """Backwards-compatible payload loader for tests and external callers."""
     return _load_payload(project_root, weekly=weekly)
@@ -424,7 +499,7 @@ def _render_semaphore_row(payload: dict) -> None:
             ("Exposure", _label_to_meter_value(str(exposure.get("exposure_stance_label", "n/a"))), exposure_state, exposure_color),
         ]
     )
-    rows = [items[i : i + 4] for i in range(0, len(items), 4)]
+    rows = [items[i : i + 2] for i in range(0, len(items), 2)]
     for row in rows:
         cols = st.columns(len(row))
         for col, (label, raw_value, state, color) in zip(cols, row, strict=False):
@@ -522,8 +597,8 @@ def _render_overview(payload: dict, project_root: Path, weekly: bool) -> None:
 
     st.markdown("### What To Buy / What To Sell")
     st.caption("Research candidates only. These are context-aware ideas generated from opportunity, proxy validation, and fragility signals, not automated execution advice.")
-    action_cols = st.columns(2)
-    with action_cols[0]:
+    action_tabs = st.tabs(["What To Buy", "What To Sell"])
+    with action_tabs[0]:
         if not buy_candidates.empty:
             buy_plot = buy_candidates.copy()
             fig = px.bar(
@@ -538,7 +613,7 @@ def _render_overview(payload: dict, project_root: Path, weekly: bool) -> None:
             fig.update_layout(height=320, margin=dict(l=10, r=10, t=40, b=10), legend_title_text="Category")
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
         _render_action_cards("What To Buy", buy_candidates, "#1f7a3d")
-    with action_cols[1]:
+    with action_tabs[1]:
         if not sell_candidates.empty:
             sell_plot = sell_candidates.copy()
             fig = px.bar(
@@ -555,53 +630,55 @@ def _render_overview(payload: dict, project_root: Path, weekly: bool) -> None:
         _render_action_cards("What To Sell", sell_candidates, "#b42318")
 
     st.markdown("---")
-    cols = st.columns(2)
-    cols[0].subheader("Top Sectors")
-    if not sectors.empty:
-        sector_plot = sectors.copy()
-        sector_plot["display_label"] = sector_plot["ticker"] + " | " + sector_plot["asset_category"]
-        fig = px.bar(
-            sector_plot.head(10).sort_values("score", ascending=True),
-            x="score",
-            y="display_label",
-            color="asset_category",
-            orientation="h",
-            title="Sector / Macro Leadership Snapshot",
-            hover_data=["ticker", "name", "classification", "relative_strength_20d", "trend_quality", "rsi"],
-        )
-        fig.update_layout(height=420, margin=dict(l=10, r=10, t=40, b=10), legend_title_text="Category")
-        cols[0].plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-        cols[0].dataframe(
-            sectors[["ticker", "name", "asset_category", "score", "classification"]].head(10),
-            use_container_width=True,
-            hide_index=True,
-        )
-    else:
-        cols[0].info("No sector ranking available.")
-    cols[1].subheader("Top Early Opportunities")
-    if not opportunities.empty:
-        opp_plot = opportunities.copy()
-        opp_plot["display_label"] = opp_plot["ticker"] + " | " + opp_plot["asset_category"]
-        opp_plot["bubble_size"] = pd.to_numeric(opp_plot.get("trend_quality", 0), errors="coerce").fillna(0).clip(lower=0) + 8
-        fig = px.scatter(
-            opp_plot.head(12),
-            x="relative_strength_20d",
-            y="early_opportunity_score",
-            color="asset_category",
-            size="bubble_size",
-            hover_name="ticker",
-            hover_data=["name", "opportunity_label", "relative_strength_60d", "technical_state", "proxy_stability"],
-            title="Early Opportunity Map",
-        )
-        fig.update_layout(height=420, margin=dict(l=10, r=10, t=40, b=10), legend_title_text="Category")
-        cols[1].plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-        cols[1].dataframe(
-            opportunities[["ticker", "name", "asset_category", "early_opportunity_score", "opportunity_label"]].head(12),
-            use_container_width=True,
-            hide_index=True,
-        )
-    else:
-        cols[1].info("No opportunity ranking available.")
+    ranking_tabs = st.tabs(["Top Sectors", "Top Early Opportunities"])
+    with ranking_tabs[0]:
+        st.subheader("Top Sectors")
+        if not sectors.empty:
+            sector_plot = sectors.copy()
+            sector_plot["display_label"] = sector_plot["ticker"] + " | " + sector_plot["asset_category"]
+            fig = px.bar(
+                sector_plot.head(10).sort_values("score", ascending=True),
+                x="score",
+                y="display_label",
+                color="asset_category",
+                orientation="h",
+                title="Sector / Macro Leadership Snapshot",
+                hover_data=["ticker", "name", "classification", "relative_strength_20d", "trend_quality", "rsi"],
+            )
+            fig.update_layout(height=420, margin=dict(l=10, r=10, t=40, b=10), legend_title_text="Category")
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+            st.dataframe(
+                sectors[["ticker", "name", "asset_category", "score", "classification"]].head(10),
+                use_container_width=True,
+                hide_index=True,
+            )
+        else:
+            st.info("No sector ranking available.")
+    with ranking_tabs[1]:
+        st.subheader("Top Early Opportunities")
+        if not opportunities.empty:
+            opp_plot = opportunities.copy()
+            opp_plot["display_label"] = opp_plot["ticker"] + " | " + opp_plot["asset_category"]
+            opp_plot["bubble_size"] = pd.to_numeric(opp_plot.get("trend_quality", 0), errors="coerce").fillna(0).clip(lower=0) + 8
+            fig = px.scatter(
+                opp_plot.head(12),
+                x="relative_strength_20d",
+                y="early_opportunity_score",
+                color="asset_category",
+                size="bubble_size",
+                hover_name="ticker",
+                hover_data=["name", "opportunity_label", "relative_strength_60d", "technical_state", "proxy_stability"],
+                title="Early Opportunity Map",
+            )
+            fig.update_layout(height=420, margin=dict(l=10, r=10, t=40, b=10), legend_title_text="Category")
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+            st.dataframe(
+                opportunities[["ticker", "name", "asset_category", "early_opportunity_score", "opportunity_label"]].head(12),
+                use_container_width=True,
+                hide_index=True,
+            )
+        else:
+            st.info("No opportunity ranking available.")
 
     baskets = load_latest_baskets(project_root, weekly=weekly)
     if baskets:
@@ -807,7 +884,12 @@ def _ensure_payload(project_root: Path, weekly: bool) -> dict:
 def main() -> None:
     """Render the local dashboard."""
     project_root = PROJECT_ROOT
-    st.set_page_config(page_title="Market Intelligence Operations Console", layout="wide")
+    st.set_page_config(
+        page_title="Market Intelligence Operations Console",
+        layout="wide",
+        initial_sidebar_state="collapsed",
+    )
+    _inject_responsive_styles()
     st.title("Market Intelligence Operations Console")
 
     run_type = st.sidebar.selectbox("Payload", ["daily", "weekly"])
