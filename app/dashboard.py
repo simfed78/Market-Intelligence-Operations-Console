@@ -431,24 +431,11 @@ def _render_semaphore_row(payload: dict) -> None:
             _render_gauge(col, label, float(raw_value), color, state)
 
 
-def _kpi_metric(container, label: str, value: str) -> None:
-    container.metric(label, value, help=KPI_HELP.get(label))
-
-
-def _metric_row(payload: dict) -> None:
-    scores = payload.get("scores", {})
-    cols = st.columns(3)
-    _kpi_metric(cols[0], "SPX Regime", f"{scores.get('spx_regime_score', 0):.1f}")
-    _kpi_metric(cols[1], "Sector Opportunity", f"{scores.get('sector_opportunity_score', 0):.1f}")
-    _kpi_metric(cols[2], "Cyclical Opportunity", f"{scores.get('cyclical_opportunity_score', 0):.1f}")
-
-
 def _render_overview(payload: dict, project_root: Path, weekly: bool) -> None:
     _section_header("Overview", SECTION_HELP["Overview"])
     _render_market_posture_banner(payload)
     st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
     _render_semaphore_row(payload)
-    _metric_row(payload)
     agent_results = payload.get("agent_results", {})
     summary_df = pd.DataFrame(
         [{"agent": name, "summary": data.get("summary", "")} for name, data in agent_results.items()]
