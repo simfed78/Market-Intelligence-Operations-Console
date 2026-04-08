@@ -123,6 +123,95 @@ def _parse_proxy_deterioration(text: str) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _build_research_actions(opportunities: pd.DataFrame, validation: pd.DataFrame, unstable: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Create research-oriented buy and sell candidate tables."""
+    if opportunities.empty:
+        empty = pd.DataFrame(columns=["ticker", "name", "asset_category", "action_score", "description"])
+        return empty, empty
+
+    base = opportunities.copy()
+    if "ticker" not in base.columns:
+        empty = pd.DataFrame(columns=["ticker", "name", "asset_category", "action_score", "description"])
+        return empty, empty
+
+    validation_summary = pd.DataFrame(columns=["ticker", "proxy_quality_score", "stability_score", "predictive_usefulness_score"])
+    if not validation.empty and "proxy" in validation.columns:
+        validation_summary = (
+            validation.groupby("proxy", as_index=False)[["proxy_quality_score", "stability_score", "predictive_usefulness_score"]]
+            .mean()
+            .rename(columns={"proxy": "ticker"})
+        )
+    unstable_set = set(unstable["proxy"].astype(str).tolist()) if not unstable.empty and "proxy" in unstable.columns else set()
+
+    merged = base.merge(validation_summary, on="ticker", how="left")
+    for col in ["proxy_quality_score", "stability_score", "predictive_usefulness_score", "proxy_stability", "early_opportunity_score"]:
+        if col not in merged.columns:
+            merged[col] = 0.0
+    merged[["proxy_quality_score", "stability_score", "predictive_usefulness_score", "proxy_stability", "early_opportunity_score"]] = (
+        merged[["proxy_quality_score", "stability_score", "predictive_usefulness_score", "proxy_stability", "early_opportunity_score"]]
+        .apply(pd.to_numeric, errors="coerce")
+        .fillna(0.0)
+    )
+    merged["is_unstable_proxy"] = merged["ticker"].astype(str).isin(unstable_set)
+    merged["buy_score"] = (
+        merged["early_opportunity_score"] * 0.45
+        + merged["proxy_stability"] * 0.20
+        + merged["proxy_quality_score"] * 0.20
+        + merged["predictive_usefulness_score"] * 0.15
+        - merged["is_unstable_proxy"].astype(float) * 12.0
+    )
+    merged["sell_score"] = (
+        (100 - merged["early_opportunity_score"]) * 0.45
+        + (100 - merged["proxy_stability"]) * 0.20
+        + (100 - merged["stability_score"]) * 0.20
+        + merged["is_unstable_proxy"].astype(float) * 15.0
+        + (100 - merged["proxy_quality_score"]) * 0.15
+    )
+
+    def describe_buy(row: pd.Series) -> str:
+        return (
+            f"{row.get('name', row.get('ticker', ''))} is a research buy candidate in {row.get('asset_category', 'Other')}. "
+            f"It ranks as {row.get('opportunity_label', 'n/a')} with opportunity {row.get('early_opportunity_score', 0):.1f}, "
+            f"proxy stability {row.get('proxy_stability', 0):.1f}, and validation quality {row.get('proxy_quality_score', 0):.1f}."
+        )
+
+    def describe_sell(row: pd.Series) -> str:
+        instability = " Structural-break or decay warnings are active." if bool(row.get("is_unstable_proxy", False)) else ""
+        return (
+            f"{row.get('name', row.get('ticker', ''))} is a research sell/avoid candidate in {row.get('asset_category', 'Other')}. "
+            f"Opportunity quality is {row.get('early_opportunity_score', 0):.1f} with proxy stability {row.get('proxy_stability', 0):.1f}."
+            f"{instability}"
+        )
+
+    buy = merged.sort_values(["buy_score", "early_opportunity_score"], ascending=False).head(5).copy()
+    sell = merged.sort_values(["sell_score", "early_opportunity_score"], ascending=[False, True]).head(5).copy()
+    buy["action_score"] = buy["buy_score"]
+    sell["action_score"] = sell["sell_score"]
+    buy["description"] = buy.apply(describe_buy, axis=1)
+    sell["description"] = sell.apply(describe_sell, axis=1)
+    cols = ["ticker", "name", "asset_category", "action_score", "description", "opportunity_label", "early_opportunity_score", "proxy_stability"]
+    return buy[cols], sell[cols]
+
+
+def _render_action_cards(title: str, frame: pd.DataFrame, color: str) -> None:
+    """Render compact action cards."""
+    st.markdown(f"#### {title}")
+    if frame.empty:
+        st.info(f"No {title.lower()} candidates available.")
+        return
+    for _, row in frame.iterrows():
+        st.markdown(
+            f"""
+            <div style="border-left:6px solid {color}; padding:12px 14px; border-radius:8px; background:#ffffff; margin:0 0 10px 0; border:1px solid #e4e7ec;">
+              <div style="font-size:16px; font-weight:700; color:#101828;">{row.get('ticker', '')} — {row.get('name', row.get('ticker', ''))}</div>
+              <div style="font-size:12px; color:#475467; margin:4px 0 8px 0;">{row.get('asset_category', 'Other')} | Action score {row.get('action_score', 0):.1f}</div>
+              <div style="font-size:13px; color:#344054;">{row.get('description', '')}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
 def _section_header(title: str, help_text: str | None = None) -> None:
     cols = st.columns([0.88, 0.12])
     cols[0].subheader(title)
@@ -311,6 +400,45 @@ def _render_overview(payload: dict, project_root: Path, weekly: bool) -> None:
 
     sectors = _with_asset_category(frame_from_payload(payload, "top_ranked_sectors"), project_root)
     opportunities = _with_asset_category(frame_from_payload(payload, "opportunity_table"), project_root)
+    validation = frame_from_payload(payload, "validation_table")
+    unstable = frame_from_payload(payload, "unstable_proxies_table")
+    buy_candidates, sell_candidates = _build_research_actions(opportunities, validation, unstable)
+
+    st.markdown("### What To Buy / What To Sell")
+    st.caption("Research candidates only. These are context-aware ideas generated from opportunity, proxy validation, and fragility signals, not automated execution advice.")
+    action_cols = st.columns(2)
+    with action_cols[0]:
+        if not buy_candidates.empty:
+            buy_plot = buy_candidates.copy()
+            fig = px.bar(
+                buy_plot.sort_values("action_score", ascending=True),
+                x="action_score",
+                y="ticker",
+                color="asset_category",
+                orientation="h",
+                title="What To Buy: Highest Contextual Proxy Success",
+                hover_data=["name", "opportunity_label", "early_opportunity_score", "proxy_stability"],
+            )
+            fig.update_layout(height=320, margin=dict(l=10, r=10, t=40, b=10), legend_title_text="Category")
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        _render_action_cards("What To Buy", buy_candidates, "#1f7a3d")
+    with action_cols[1]:
+        if not sell_candidates.empty:
+            sell_plot = sell_candidates.copy()
+            fig = px.bar(
+                sell_plot.sort_values("action_score", ascending=True),
+                x="action_score",
+                y="ticker",
+                color="asset_category",
+                orientation="h",
+                title="What To Sell: Weakest Contextual Proxy Success",
+                hover_data=["name", "opportunity_label", "early_opportunity_score", "proxy_stability"],
+            )
+            fig.update_layout(height=320, margin=dict(l=10, r=10, t=40, b=10), legend_title_text="Category")
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        _render_action_cards("What To Sell", sell_candidates, "#b42318")
+
+    st.markdown("---")
     cols = st.columns(2)
     cols[0].subheader("Top Sectors")
     if not sectors.empty:
