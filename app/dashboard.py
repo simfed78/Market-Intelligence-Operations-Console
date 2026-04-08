@@ -152,17 +152,17 @@ def _mode_badge(run_type: str, timestamp: str) -> None:
     )
 
 
-def _refresh_controls(project_root: Path, weekly: bool) -> None:
-    """Render dashboard refresh actions."""
+def _refresh_controls(project_root: Path) -> None:
+    """Render a single dashboard-wide refresh action."""
     cols = st.columns([0.22, 0.78])
-    button_label = "Refresh weekly data" if weekly else "Refresh daily data"
-    help_text = "Run the full weekly cycle and refresh the hosted payload." if weekly else "Run the daily sample cycle and refresh the dashboard payload."
+    button_label = "Refresh all dashboard data"
+    help_text = "Rebuild both daily and weekly payloads so every dashboard tab reads from fresh data."
     if cols[0].button(button_label, help=help_text, use_container_width=True):
-        with st.spinner("Refreshing dashboard data..."):
-            _generate_payload(project_root, weekly=weekly)
+        with st.spinner("Refreshing all dashboard data..."):
+            _refresh_all_payloads(project_root)
         st.success("Refresh completed.")
         st.rerun()
-    cols[1].caption("Use this when you want to rebuild the current dashboard snapshot without leaving Streamlit.")
+    cols[1].caption("This rebuilds both daily and weekly snapshots, so all tabs and payload views are refreshed together.")
 
 
 def _semaphore_bucket(value: float, positive: float = 60.0, negative: float = 40.0) -> tuple[str, str]:
@@ -539,6 +539,13 @@ def _generate_payload(project_root: Path, weekly: bool) -> None:
         DailyCycleRunner(config=config, project_root=project_root).run(run_type="sample")
 
 
+def _refresh_all_payloads(project_root: Path) -> None:
+    """Refresh both dashboard payloads."""
+    config = load_config_bundle(project_root / "config")
+    DailyCycleRunner(config=config, project_root=project_root).run(run_type="sample")
+    WeeklyCycleRunner(config=config, project_root=project_root).run()
+
+
 def _ensure_payload(project_root: Path, weekly: bool) -> dict:
     """Load a payload and bootstrap one when missing."""
     payload = load_payload(project_root, weekly=weekly)
@@ -568,7 +575,7 @@ def main() -> None:
     if not payload:
         return
     _mode_badge(run_type, str(payload.get("timestamp", "n/a")))
-    _refresh_controls(project_root, weekly=run_type == "weekly")
+    _refresh_controls(project_root)
 
     if page == "Overview":
         _render_overview(payload, project_root, weekly=run_type == "weekly")
