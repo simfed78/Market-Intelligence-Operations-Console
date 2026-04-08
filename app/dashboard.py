@@ -96,6 +96,33 @@ def _with_asset_category(frame: pd.DataFrame, project_root: Path) -> pd.DataFram
     return out
 
 
+def _parse_proxy_deterioration(text: str) -> pd.DataFrame:
+    """Parse compact proxy deterioration text into a table."""
+    if not text:
+        return pd.DataFrame(columns=["proxy", "previous", "current", "delta"])
+    rows: list[dict[str, float | str]] = []
+    for part in text.split(","):
+        item = part.strip()
+        if " " not in item or "->" not in item:
+            continue
+        proxy, values = item.split(" ", 1)
+        previous, current = values.split("->", 1)
+        try:
+            prev_val = float(previous)
+            curr_val = float(current)
+        except ValueError:
+            continue
+        rows.append(
+            {
+                "proxy": proxy,
+                "previous": prev_val,
+                "current": curr_val,
+                "delta": curr_val - prev_val,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def _section_header(title: str, help_text: str | None = None) -> None:
     cols = st.columns([0.88, 0.12])
     cols[0].subheader(title)
@@ -341,13 +368,85 @@ def _render_overview(payload: dict, project_root: Path, weekly: bool) -> None:
 def _render_what_changed(payload: dict, project_root: Path, weekly: bool) -> None:
     changed = load_what_changed(project_root, weekly=weekly)
     _section_header("What Changed", SECTION_HELP["What Changed"])
-    for key, value in changed.get("change_log", {}).items():
-        st.write(f"- {key}: {value}")
     transitions = changed.get("transitions", pd.DataFrame())
-    st.dataframe(transitions, use_container_width=True, hide_index=True)
+    change_log = changed.get("change_log", {})
+    proxy_text = str(change_log.get("proxy_deterioration", ""))
+    ranking_text = str(change_log.get("ranking_transitions", ""))
+    deterioration_df = _parse_proxy_deterioration(proxy_text)
+
+    top = st.columns(3)
+    top[0].metric("State Transitions", f"{len(transitions)}")
+    top[1].metric("Weakening Proxies", f"{len(deterioration_df)}")
+    top[2].metric("Payload Mode", "Weekly" if weekly else "Daily")
+
+    summary_cols = st.columns(2)
+    with summary_cols[0].container(border=True):
+        st.markdown("#### Key Takeaways")
+        if ranking_text:
+            st.write(f"- Ranking shifts: {ranking_text}")
+        else:
+            st.write("- No ranking-state changes detected in the current comparison window.")
+        if proxy_text:
+            st.write(f"- Proxy deterioration: {proxy_text}")
+        else:
+            st.write("- No proxy deterioration summary was generated.")
+    with summary_cols[1].container(border=True):
+        st.markdown("#### Interpretation")
+        if not transitions.empty:
+            st.write("Ranking states changed versus the previous run, which usually means leadership or opportunity quality is moving, not just noise in the same regime.")
+        elif not deterioration_df.empty:
+            st.write("No category transitions were recorded, but underlying proxy quality weakened. This often means the surface ranking is stable while confirmation is softening underneath.")
+        else:
+            st.write("The current run looks broadly stable relative to the previous snapshot. That can be useful when you want confirmation rather than churn.")
+
+    visual_cols = st.columns(2)
+    if not deterioration_df.empty:
+        det_plot = deterioration_df.sort_values("delta")
+        fig = px.bar(
+            det_plot,
+            x="delta",
+            y="proxy",
+            orientation="h",
+            color="delta",
+            color_continuous_scale=["#b42318", "#f59e0b", "#1f7a3d"],
+            title="Proxy Stability Change vs Previous Run",
+            hover_data=["previous", "current"],
+        )
+        fig.update_layout(height=320, margin=dict(l=10, r=10, t=40, b=10), coloraxis_showscale=False)
+        visual_cols[0].plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    else:
+        visual_cols[0].info("No proxy deterioration series available for this run.")
+
     if not transitions.empty:
-        fig = px.histogram(transitions, x="current_value", color="previous_value", title="Ranking State Transitions")
-        st.plotly_chart(fig, use_container_width=True)
+        transition_plot = transitions.copy()
+        transition_plot["transition"] = transition_plot["previous_value"] + " → " + transition_plot["current_value"]
+        transition_plot["count"] = 1
+        fig = px.bar(
+            transition_plot,
+            x="item",
+            y="count",
+            color="transition",
+            title="Ranking State Transitions",
+            hover_data=["item", "previous_value", "current_value", "summary"],
+        )
+        fig.update_layout(height=320, margin=dict(l=10, r=10, t=40, b=10), yaxis_title="", xaxis_title="")
+        visual_cols[1].plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    else:
+        visual_cols[1].info("No ranking-state transitions detected.")
+
+    lower_cols = st.columns(2)
+    with lower_cols[0]:
+        st.markdown("#### Proxy Deterioration Table")
+        if not deterioration_df.empty:
+            st.dataframe(deterioration_df, use_container_width=True, hide_index=True)
+        else:
+            st.caption("Empty because no proxy deterioration block was parsed for this payload.")
+    with lower_cols[1]:
+        st.markdown("#### Transition Table")
+        if not transitions.empty:
+            st.dataframe(transitions, use_container_width=True, hide_index=True)
+        else:
+            st.caption("No ranking transitions were recorded for this snapshot.")
 
 
 def _render_baskets(payload: dict, project_root: Path, weekly: bool) -> None:
