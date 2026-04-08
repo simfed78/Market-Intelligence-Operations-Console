@@ -431,16 +431,87 @@ def _render_semaphore_row(payload: dict) -> None:
             _render_gauge(col, label, float(raw_value), color, state)
 
 
+def _agent_narrative(agent: str, summary: str) -> tuple[str, str]:
+    """Translate agent output into a more narrative executive readout."""
+    if agent == "macro_regime":
+        return "Macro Backdrop", "Frames the broad economic regime and whether growth, inflation, and policy are helping or constraining risk-taking."
+    if agent == "liquidity_rates_credit":
+        return "Funding And Credit", "Shows whether rates pressure and credit conditions are acting as support or friction for the market."
+    if agent == "cross_asset_leadlag":
+        return "Cross-Asset Confirmation", "Highlights which proxies are actually leading SPX behavior right now and whether those relationships still look trustworthy."
+    if agent == "sentiment_internals":
+        return "Market Internals", "Measures how healthy the tape is under the surface, separating participation from fragility."
+    if agent == "seasonality":
+        return "Calendar Context", "Adds timing context from recurring patterns and event windows, without treating them as standalone triggers."
+    if agent == "technical_structure":
+        return "Technical Structure", "Summarizes trend state, breakout quality, and whether price action is improving or degrading."
+    if agent == "macro_event":
+        return "Event Risk", "Flags whether the next few sessions are loaded with macro catalysts that can distort or accelerate moves."
+    if agent == "earnings_revision":
+        return "Earnings Tone", "Approximates whether earnings reactions are being rewarded or faded across sectors."
+    if agent == "sector_internals":
+        return "Sector Breadth", "Checks whether sector leadership is broad and healthy or narrow and concentration-driven."
+    if agent == "options_proxy":
+        return "Options Structure", "Reads the volatility and gamma backdrop to judge whether positioning is supportive, unstable, or squeeze-prone."
+    return agent.replace("_", " ").title(), "Agent context layer."
+
+
+def _agent_tone(summary: str) -> tuple[str, str]:
+    """Infer a simple tone tag from the summary text."""
+    text = (summary or "").lower()
+    if any(token in text for token in ["risk_off", "fragility", "credit stress", "negative", "downtrend", "unstable", "defensive", "capital preservation"]):
+        return "Caution", "#b42318"
+    if any(token in text for token in ["supportive", "positive", "improving", "uptrend", "lead", "healthy", "favorable"]):
+        return "Supportive", "#1f7a3d"
+    return "Mixed", "#f59e0b"
+
+
+def _render_agent_narratives(agent_results: dict) -> None:
+    """Render narrative summaries for the main agents."""
+    st.markdown("### Narrative Summary")
+    st.caption("A more readable interpretation of each agent, meant for quick daily review before drilling into tables and charts.")
+    preferred_order = [
+        "macro_regime",
+        "liquidity_rates_credit",
+        "sentiment_internals",
+        "technical_structure",
+        "cross_asset_leadlag",
+        "macro_event",
+        "earnings_revision",
+        "sector_internals",
+        "options_proxy",
+        "seasonality",
+    ]
+    cards = [name for name in preferred_order if name in agent_results]
+    rows = [cards[i : i + 2] for i in range(0, len(cards), 2)]
+    for row in rows:
+        cols = st.columns(len(row))
+        for col, agent_name in zip(cols, row, strict=False):
+            result = agent_results[agent_name]
+            title, framing = _agent_narrative(agent_name, result.summary)
+            tone, color = _agent_tone(result.summary)
+            col.markdown(
+                f"""
+                <div style="border:1px solid #d0d5dd;border-radius:12px;padding:14px 16px;background:#ffffff;min-height:180px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">
+                    <div style="font-size:17px;font-weight:700;color:#101828;">{title}</div>
+                    <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:{color};color:white;font-size:12px;font-weight:700;">{tone}</span>
+                  </div>
+                  <div style="font-size:13px;color:#475467;margin-bottom:10px;line-height:1.45;">{framing}</div>
+                  <div style="font-size:14px;color:#344054;line-height:1.55;">{result.summary}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
 def _render_overview(payload: dict, project_root: Path, weekly: bool) -> None:
     _section_header("Overview", SECTION_HELP["Overview"])
     _render_market_posture_banner(payload)
     st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
     _render_semaphore_row(payload)
     agent_results = payload.get("agent_results", {})
-    summary_df = pd.DataFrame(
-        [{"agent": name, "summary": data.get("summary", "")} for name, data in agent_results.items()]
-    )
-    st.dataframe(summary_df, use_container_width=True, hide_index=True)
+    _render_agent_narratives(agent_results)
 
     sectors = _with_asset_category(frame_from_payload(payload, "top_ranked_sectors"), project_root)
     opportunities = _with_asset_category(frame_from_payload(payload, "opportunity_table"), project_root)
