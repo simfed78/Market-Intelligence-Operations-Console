@@ -446,6 +446,7 @@ def _metric_row(payload: dict) -> None:
 def _render_overview(payload: dict, project_root: Path, weekly: bool) -> None:
     _section_header("Overview", SECTION_HELP["Overview"])
     _render_market_posture_banner(payload)
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
     _render_semaphore_row(payload)
     _metric_row(payload)
     agent_results = payload.get("agent_results", {})
