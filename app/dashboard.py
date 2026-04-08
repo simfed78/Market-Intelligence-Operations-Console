@@ -312,6 +312,64 @@ def _gauge_abstract(label: str, value: float, state: str) -> str:
     return f"Current state is {state} with a reading of {value:.1f}."
 
 
+def _render_market_posture_banner(payload: dict) -> None:
+    """Highlight risk flag and exposure with full readable text."""
+    exposure = payload.get("exposure_view", {})
+    risk_flag = str(payload.get("risk_environment_flag", "unknown"))
+    exposure_label = str(exposure.get("exposure_stance_label", "n/a"))
+    risk_state, risk_color = _risk_flag_semaphore(risk_flag)
+    exposure_state, exposure_color = _risk_flag_semaphore(exposure_label)
+    risk_summary = {
+        "positive": "Risk appetite is supportive and the engine is not flagging broad defensive stress.",
+        "neutral": "The market backdrop is mixed, so confirmation matters more than aggressive positioning.",
+        "negative": "The engine sees a defensive or fragile backdrop, so caution and selectivity matter.",
+    }
+    exposure_summary = exposure.get(
+        "exposure_summary",
+        "Exposure view unavailable.",
+    )
+    cols = st.columns(2)
+    cards = [
+        (
+            cols[0],
+            "Risk Flag",
+            risk_flag.replace("_", " "),
+            risk_state,
+            risk_color,
+            risk_summary.get(risk_state, ""),
+        ),
+        (
+            cols[1],
+            "Exposure",
+            exposure_label.replace("_", " "),
+            exposure_state,
+            exposure_color,
+            exposure_summary,
+        ),
+    ]
+    for col, title, value, state, color, summary in cards:
+        col.markdown(
+            f"""
+            <div style="border:1px solid #d0d5dd;border-radius:14px;padding:16px 18px;background:#ffffff;min-height:154px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:{color};"></span>
+                <span style="font-size:13px;font-weight:700;color:#475467;text-transform:uppercase;letter-spacing:0.04em;">{title}</span>
+              </div>
+              <div style="font-size:34px;line-height:1.1;font-weight:800;color:#101828;word-break:break-word;overflow-wrap:anywhere;margin-bottom:10px;">
+                {value}
+              </div>
+              <div style="font-size:12px;font-weight:700;color:{color};text-transform:capitalize;margin-bottom:8px;">
+                {state}
+              </div>
+              <div style="font-size:14px;line-height:1.45;color:#344054;word-break:break-word;overflow-wrap:anywhere;">
+                {summary}
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
 def _render_gauge(container, label: str, value: float, color: str, state: str) -> None:
     """Render a compact speedometer-style gauge."""
     fig = go.Figure(
@@ -379,17 +437,15 @@ def _kpi_metric(container, label: str, value: str) -> None:
 
 def _metric_row(payload: dict) -> None:
     scores = payload.get("scores", {})
-    exposure = payload.get("exposure_view", {})
-    cols = st.columns(5)
+    cols = st.columns(3)
     _kpi_metric(cols[0], "SPX Regime", f"{scores.get('spx_regime_score', 0):.1f}")
     _kpi_metric(cols[1], "Sector Opportunity", f"{scores.get('sector_opportunity_score', 0):.1f}")
     _kpi_metric(cols[2], "Cyclical Opportunity", f"{scores.get('cyclical_opportunity_score', 0):.1f}")
-    _kpi_metric(cols[3], "Risk Flag", payload.get("risk_environment_flag", "unknown"))
-    _kpi_metric(cols[4], "Exposure", exposure.get("exposure_stance_label", "n/a"))
 
 
 def _render_overview(payload: dict, project_root: Path, weekly: bool) -> None:
     _section_header("Overview", SECTION_HELP["Overview"])
+    _render_market_posture_banner(payload)
     _render_semaphore_row(payload)
     _metric_row(payload)
     agent_results = payload.get("agent_results", {})
