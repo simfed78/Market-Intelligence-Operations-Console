@@ -125,6 +125,19 @@ def _mode_badge(run_type: str, timestamp: str) -> None:
     )
 
 
+def _refresh_controls(project_root: Path, weekly: bool) -> None:
+    """Render dashboard refresh actions."""
+    cols = st.columns([0.22, 0.78])
+    button_label = "Refresh weekly data" if weekly else "Refresh daily data"
+    help_text = "Run the full weekly cycle and refresh the hosted payload." if weekly else "Run the daily sample cycle and refresh the dashboard payload."
+    if cols[0].button(button_label, help=help_text, use_container_width=True):
+        with st.spinner("Refreshing dashboard data..."):
+            _generate_payload(project_root, weekly=weekly)
+        st.success("Refresh completed.")
+        st.rerun()
+    cols[1].caption("Use this when you want to rebuild the current dashboard snapshot without leaving Streamlit.")
+
+
 def _semaphore_bucket(value: float, positive: float = 60.0, negative: float = 40.0) -> tuple[str, str]:
     """Map a score to a simple semaphore state."""
     if value >= positive:
@@ -456,6 +469,7 @@ def main() -> None:
     if not payload:
         return
     _mode_badge(run_type, str(payload.get("timestamp", "n/a")))
+    _refresh_controls(project_root, weekly=run_type == "weekly")
 
     if page == "Overview":
         _render_overview(payload, project_root, weekly=run_type == "weekly")
