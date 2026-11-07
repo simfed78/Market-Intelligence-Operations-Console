@@ -31,3 +31,13 @@ Publishing source to GitHub is separate from verifying the live Streamlit app. T
 No fundamental/net-flow/COT source, statistical entry validation, point-in-time historical universe, return forecasts, walk-forward performance, or full cross-asset valuation model has been created. Opportunity Score measures technical rank position within a class, not expected return or absolute investment value. Cross-class ties have a deterministic display order, not stronger conviction.
 
 Community Cloud runtime storage is ephemeral; past ranks may be unavailable after restart. Source outages result in unavailable/degraded signals; no synthetic fallback. The public monitor has no broker connection and does not reveal the local Core.
+
+## Hosted/mobile correction after the user screenshot
+
+The screenshot confirms the updated app is live at `https://market-intelligence-operations-console-7ejfn7tyabjcktlo7kdy22.streamlit.app`. It also shows 44/145 valid prices, missing macro, a generic outage warning and no completed-run caption. It does not prove the entire source set is unavailable.
+
+Code review established two reproducible defects: a concurrent refresh returned acquired=0 and was mislabeled as an outage, and a cold reader could expose uncommitted partial snapshots. The correction separates RUNNING/COMPLETE/FAILED, runs source IO in a background worker, publishes completed runs only, and polls job status without rerunning source requests. Provider failures now include sanitized reason, HTTP status and Retry-After when available. Qualified recent payloads are reused; public requests are paced and new attempts stop after a 120-second job budget (active requests retain their existing timeout). No source rate limit is bypassed.
+
+82 regression tests passed. New tests cover concurrent starts, exception state without automatic retry loops, redacted diagnostics, cold-run publication isolation, cache freshness/hash, exhausted acquisition budget, loading-state UI and compact-card navigation. The legacy market adapter engineering test now explicitly avoids live Yahoo IO, as the legacy orchestration test already does. This is not a certification of provider availability.
+
+Real-snapshot AppTest in compact mode shows ten opportunity cards and no full-height macro metric cards. The user's screenshot is the evidence of the prior live rendering; the new mobile rendering has only been exercised through AppTest because browser automation remains unavailable. Full live Yahoo/FRED recovery is not claimed before actual server diagnostics show it.

@@ -108,13 +108,25 @@ def test_public_shortlists_are_session_private(monkeypatch,dashboard_model):
     assert next(m for m in other.multiselect if m.label=='Monitoraggio approfondito').value==[]
 
 
-def test_hosted_cold_start_requests_only_public_sources(monkeypatch,dashboard_model):
+def test_hosted_cold_start_shows_progress_not_false_outage(monkeypatch,dashboard_model):
     model=deepcopy(dashboard_model);model['public_mode']=True;model['latest_run']=None
     calls=[]
-    def refresh(root):
-        calls.append(root);model['latest_run']={'run_at':'2026-11-07T10:00:00Z'}
-        return {'acquired':0,'errors':['declared offline fixture']}
-    monkeypatch.setattr(ui,'refresh_public',refresh)
+    def start(root,**kwargs):
+        calls.append(root);return {'status':'RUNNING','completed':44,'total':153}
+    monkeypatch.setattr(ui,'start_public_refresh',start)
+    monkeypatch.setattr(ui,'public_status',lambda root:{'status':'RUNNING','completed':44,'total':153})
     app=launch(monkeypatch,model);check(app)
-    assert len(calls)==1 and app.warning
-    assert not MemoryStore.shortlist
+    assert len(calls)==1 and not app.warning
+    assert app.get('progress') and not MemoryStore.shortlist
+
+
+def test_mobile_compact_cards_put_action_near_ticker(monkeypatch,dashboard_model):
+    monkeypatch.setattr(ui,'_compact_default',lambda:True)
+    app=launch(monkeypatch,dashboard_model);check(app)
+    assert not app.metric  # no four full-width macro cards above the opportunities
+    assert next(c for c in app.checkbox if c.label=='Vista compatta').value
+    buttons=[b for b in app.button if b.label=='Apri scheda']
+    assert len(buttons)==6
+    assert any('Da approfondire' in w.value for w in app.markdown)
+    buttons[0].click().run();check(app)
+    assert app.radio[0].value=='Asset explorer'

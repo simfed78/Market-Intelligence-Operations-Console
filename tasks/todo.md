@@ -38,3 +38,12 @@ Yahoo is a single indicative research source, not an execution feed. Adjusted cl
 - [x] Unit, integration and regression checks; six real-data AppTest views and API.
 - [ ] Rendered-browser verification: browser transport unavailable.
 - [x] Commit and report exact launch/update/public URL and remaining limits.
+
+## Hosted/mobile correction from user screenshot
+- [x] Separate concurrent acquisition from actual outages and expose progress/errors.
+- [x] Do not rank uncommitted first-run fragments.
+- [x] Nonblocking first startup, bounded source pacing and reuse of fresh qualified snapshots.
+- [x] Compact macro summary and readable mobile opportunity cards.
+- [x] Regression tests and publish fix to existing Streamlit branch.
+
+Hosted correction: 82 tests passed; mobile AppTest exposes 10 cards and zero macro metric cards. Server source availability must be checked from new diagnostics; no claim of 145 recovered sources.

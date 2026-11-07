@@ -79,3 +79,11 @@ Stesso repository e entrypoint della precedente Streamlit Community Cloud: branc
 Su host Linux senza Core configurato, o con `TRADING_DESK_PUBLIC=1`, il monitor Core è disabilitato. Nella versione pubblica la shortlist è privata della sessione browser, non salvata in una preferenza condivisa fra visitatori. Il pulsante di aggiornamento usa un lock di processo; se un refresh è già attivo, non ne avvia un secondo.
 
 Se Yahoo/FRED non rispondono, la pagina resta navigabile e mostra MISSING/DEGRADED e gli errori; non genera dati sostitutivi. Il filesystem di Community Cloud è effimero: dopo riavvio può essere necessario ricostruire gli snapshot e lo storico dei ranghi può ripartire senza confronti. Nessun servizio di trading viene esposto.
+
+## Correzione caricamento pubblico e mobile (7 novembre 2026)
+
+Il caricamento iniziale avviene in background con avanzamento delle fonti. Un secondo visitatore che arriva durante lo stesso refresh vede RUNNING, non un falso errore di indisponibilità. Il polling della sola UI rilegge lo stato ogni tre secondi; non rilancia richieste alle fonti. I frammenti del primo download non sono pubblicati in classifica finché non esiste un run concluso.
+
+Gli errori delle fonti riportano simbolo, tipo, dettaglio sanitizzato, codice HTTP e Retry-After quando forniti. Le fonti 429 non sono aggirate con altri host. Le richieste pubbliche sono distanziate e i payload recenti qualificati vengono riusati fino a sei ore, mantenendo timestamp e hash originali. Cache e download sono conteggiati separatamente.
+
+Su iPhone il contesto macro è compatto e la Top10 usa schede con ticker, strumento, stato, orizzonte, rischio e pulsante della scheda completa. La vista tabellare resta disponibile disattivando “Vista compatta”. Questo migliora leggibilità e caricamento; non certifica nuove fonti, probabilità o segnali d'ingresso.

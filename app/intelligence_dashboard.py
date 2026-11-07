@@ -19,7 +19,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.intelligence.service import load_dashboard
 from src.intelligence.store import Store
-from src.intelligence.hosted import refresh_public
+from src.intelligence.hosted import start_public_refresh, public_status
 from src.intelligence.opportunities import rank_opportunities, top10, MODEL_VERSION, WEIGHTS
 
 GREEN = "#1f4f46"
@@ -62,7 +62,7 @@ def _styles() -> None:
     .stApp [data-testid="stSidebar"] {border-right:1px solid #dfe6df;}
     .stApp [data-testid="stDataFrame"] {border-radius:10px;}
     .stApp .block-container {padding-top:2rem;padding-bottom:3rem;max-width:1600px;}
-    @media(max-width:700px){.stApp .block-container{padding:1rem .8rem 2rem;}.stApp h1{font-size:1.9rem;}}
+    @media(max-width:700px){.stApp .block-container{padding:1rem .8rem 2rem;}.stApp h1{font-size:1.65rem;line-height:1.15;} .stApp h2{font-size:1.35rem;}}
     </style>""", unsafe_allow_html=True)
 
 
@@ -198,7 +198,54 @@ def _ranked(data: dict, score: str) -> pd.DataFrame:
     return rank_opportunities(metrics,horizon)
 
 
+def _compact_default() -> bool:
+    try:
+        agent=st.context.headers.get('User-Agent','').lower()
+        return 'iphone' in agent or 'android' in agent
+    except (AttributeError,RuntimeError,KeyError):return False
+
+
+def _opportunity_cards(frame: pd.DataFrame, key: str) -> None:
+    for row in frame.to_dict('records'):
+        with st.container(border=True):
+            st.markdown(f"**{row['priority']}. {row['symbol']}** · {row.get('subcategory',row.get('asset_class',''))}")
+            st.caption(str(row.get('name','')))
+            action='Da approfondire' if row.get('signal_state')=='RESEARCH CANDIDATE' else 'Attendere conferma'
+            st.write(f"{action} · {row.get('horizon','')} · rischio volatilità {row.get('risk_category','—')}")
+            price=_finite(row.get('price'));ma=_finite(row.get('sma50'))
+            if price is not None:
+                st.caption(f"Chiusura {price:,.2f} {row.get('currency','')} · seduta {row.get('observed_at','—')}")
+            if price is not None and ma is not None:
+                st.write(f"{'Sopra' if price>ma else 'Sotto'} la media a 50 sedute ({ma:,.2f}).")
+            st.caption(str(row.get('rationale','')))
+            st.button('Apri scheda',key=f"{key}_card_{row['symbol']}",on_click=_open_asset,args=(row['symbol'],))
+
+
+@st.fragment(run_every='3s')
+def _refresh_notice() -> None:
+    state=public_status(PROJECT_ROOT)
+    status=state.get('status')
+    if status=='RUNNING':
+        completed=state.get('completed',0);total=max(state.get('total',153),1)
+        st.progress(min(completed/total,1.0),text=f"Caricamento dati: {completed}/{total} fonti verificate")
+        st.caption('Aggiornamento in corso. La pagina si aggiorna da sola al termine; eventuali dati precedenti restano visibili.')
+    elif status in ('COMPLETE','FAILED'):
+        job=state.get('job_id')
+        if job and st.session_state.get('completed_refresh_id')!=job:
+            st.session_state['completed_refresh_id']=job
+            _load.clear()
+            st.rerun()
+        result=state.get('result',{})
+        errors=result.get('errors',[])
+        if errors:
+            st.caption(f"Aggiornamento concluso: {result.get('acquired',0)} fonti scaricate, {result.get('cached',0)} in cache, {len(errors)} non aggiornate. Dettagli nel menu Data quality.")
+
+
 def _ranking_table(frame: pd.DataFrame, key: str) -> None:
+    compact=st.checkbox('Vista compatta',value=_compact_default(),key=key+'_compact')
+    if compact:
+        _opportunity_cards(frame,key)
+        return
     columns=["priority","symbol","name","asset_class","subcategory","opportunity_score","rank_change",
              "ret_21","ret_63","ret_126","ret_252","volume_signal","risk_category","horizon","signal_state","rationale","observed_at","updated_at"]
     config={"priority":st.column_config.NumberColumn("Priorità",pinned=True),
@@ -229,14 +276,12 @@ def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -
     st.subheader("Global Macro & Risk Regime")
     macro=data.get("macro",{}) or {}
     label=str(macro.get("label","Non disponibile"))
-    c1,c2,c3,c4=st.columns(4)
-    c1.metric("Regime USA",label.split(" / ")[0])
-    c2.metric("Qualità macro",str(macro.get("status","MISSING")))
-    c3.metric("Prezzi VALID",f"{int(filtered.price_status.eq('VALID').sum())} / {len(filtered)}")
-    c4.metric("Ingressi validati","0",help="Il modello di ingresso non è stato validato: nessun ENTRY CANDIDATE.")
-    st.caption(f"{label} · {macro.get('reason','Fonti macro mancanti.')}")
+    valid=int(filtered.price_status.eq('VALID').sum())
+    st.caption(f"{label} · macro {macro.get('status','MISSING')} · prezzi validi {valid}/{len(filtered)} · ingressi validati 0")
+    with st.expander('Dettagli del contesto macro'):
+        st.write(str(macro.get('reason','Fonti macro mancanti.')))
     st.subheader("Top 10 Multi-Asset Opportunities")
-    st.caption("Priorità di ricerca, non segnali BUY. Opportunity Score = percentile del composito tecnico entro la propria asset class; confronta posizione relativa, non rendimento atteso o convenienza assoluta. Macro, value e flussi netti sono esclusi perché mancanti/non qualificati.")
+    st.caption("Candidati di ricerca, non acquisti validati. La posizione tecnica nel gruppo non misura il rendimento atteso.")
     ranked=_ranked(data,score)
     universe_symbols=set(filtered.symbol)
     scope=ranked[ranked.symbol.isin(universe_symbols)].copy()
@@ -416,8 +461,8 @@ def _quality(data: dict, filtered: pd.DataFrame) -> None:
 def main() -> None:
     st.set_page_config(page_title="Trading Desk · Multi-Asset Intelligence", page_icon="◈", layout="wide")
     _styles()
-    st.title("Multi-Asset Opportunity Discovery")
-    st.caption("RESEARCH_ONLY · Trading Desk DEMO_READ_ONLY · dati di fine seduta")
+    st.title("Opportunità multi-asset")
+    st.caption("Ricerca e confronto · dati di fine seduta")
     with st.spinner("Lettura degli snapshot locali…"):
         try:
             data = _load(str(PROJECT_ROOT))
@@ -426,15 +471,21 @@ def main() -> None:
             st.code("python -m src.intelligence.refresh --root .", language="bash")
             return
     if data.get('public_mode') and data.get('latest_run') is None:
-        with st.spinner("Prima apertura: acquisizione dei soli dati pubblici di mercato…"):
-            result=refresh_public(PROJECT_ROOT)
-        _load.clear()
-        data=_load(str(PROJECT_ROOT))
-        if not result.get('acquired'):
-            st.warning("Fonti pubbliche temporaneamente non disponibili. Nessun dato sintetico è stato sostituito ai dati reali.")
+        start_public_refresh(PROJECT_ROOT)
+    _refresh_notice()
     metrics = _frame(data.get("metrics"))
     universe = _frame(data.get("universe"))
     latest_run = data.get("latest_run")
+    errors=(latest_run or {}).get('errors',[])
+    if errors:
+        valid=int(metrics.get('price_status',pd.Series(dtype=str)).eq('VALID').sum())
+        st.caption(f"Copertura incompleta: {valid}/{len(metrics)} prezzi validi. Alcune fonti non sono state aggiornate.")
+        with st.expander('Stato delle fonti'):
+            st.dataframe(pd.DataFrame(errors),hide_index=True,width='stretch')
+        if not valid and public_status(PROJECT_ROOT).get('status')!='RUNNING':
+            if st.button('Riprova caricamento',key='retry_sources'):
+                start_public_refresh(PROJECT_ROOT,force=True)
+                st.rerun()
     if isinstance(latest_run, dict) and latest_run.get("run_at"):
         st.caption(f"Ultimo run: {latest_run['run_at']} · fonti e date di disponibilità nella diagnostica e nell’Asset explorer.")
     if metrics.empty:
@@ -459,10 +510,7 @@ def main() -> None:
         only_shortlist = st.checkbox("Solo shortlist", value=False)
         st.divider()
         if st.button("Aggiorna dati pubblici",width="stretch"):
-            with st.spinner("Aggiornamento delle fonti reali…"):
-                result=refresh_public(PROJECT_ROOT)
-            _load.clear()
-            st.session_state['refresh_result']=result
+            start_public_refresh(PROJECT_ROOT,force=True)
             st.rerun()
         if st.button("Rileggi snapshot", width="stretch"):
             _load.clear()
@@ -482,6 +530,7 @@ def main() -> None:
         filtered = filtered[matches]
     if only_valid:
         filtered = filtered[filtered["price_status"].eq("VALID")]
+    st.sidebar.caption("RESEARCH_ONLY · DEMO_READ_ONLY")
     store = Store(PROJECT_ROOT)
     if data.get('public_mode'):
         class SessionShortlist:

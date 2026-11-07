@@ -11,3 +11,5 @@
 7. Pubblicazione: la shortlist di un host pubblico non può condividere una preferenza SQLite fra visitatori. La versione pubblica usa session state e disabilita le letture Core. Le fonti vengono acquisite dal server; non si pubblica il database del Mac.
 
 8. Il test di orchestrazione legacy non deve dipendere da richieste Yahoo non limitate: due suite sono state interrotte in yfinance.multi.download. La regressione del workflow usa adapter offline esplicitamente nel solo test. Acquisizione reale e controlli finanziari restano separati.
+
+9. Lo screenshot mobile mostra un falso avviso di outage insieme a dati parziali e nessun run completato. Un lock occupato è RUNNING, non un fallimento delle fonti. Non promuovere i frammenti del primo caricamento; usare avanzamento asincrono e un evento di completamento distinto. Le metriche desktop impilate sul telefono spostavano la Top10 troppo in basso: il contesto deve essere compatto e le opportunità devono avere una vista a schede.

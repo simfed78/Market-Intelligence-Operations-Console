@@ -22,7 +22,7 @@ def load_dashboard(root: Path, as_of=None, *, include_unpublished=False):
     try:
         latest=store.latest_run(now)
         cutoff=now if include_unpublished or not latest else latest['run_at']
-        snapshots=store.latest_snapshots(as_of=cutoff)
+        snapshots=store.latest_snapshots(as_of=cutoff) if latest or include_unpublished else {}
         previous=store.previous_metrics(latest['run_at']) if latest else {}
     except (OSError,sqlite3.DatabaseError):
         snapshots={};latest=None;previous={}
