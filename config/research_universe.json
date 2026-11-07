@@ -1,0 +1,1452 @@
+[
+  {
+    "symbol": "SPY",
+    "name": "S&P 500",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "QQQ",
+    "name": "Nasdaq 100",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IWM",
+    "name": "Russell 2000",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "DIA",
+    "name": "Dow Jones",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "RSP",
+    "name": "S&P 500 equal weight",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "VTI",
+    "name": "Total US market",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IWB",
+    "name": "Russell 1000",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IWD",
+    "name": "Russell 1000 value",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IWF",
+    "name": "Russell 1000 growth",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IJS",
+    "name": "Small cap value",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "MTUM",
+    "name": "USA momentum",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "QUAL",
+    "name": "USA quality",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "USMV",
+    "name": "USA minimum volatility",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "SCHD",
+    "name": "USA dividend",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "VIG",
+    "name": "Dividend appreciation",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "ACWI",
+    "name": "All country world",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "VT",
+    "name": "Total world",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "VEA",
+    "name": "Developed ex US",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "VWO",
+    "name": "Emerging markets",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EEM",
+    "name": "Emerging markets",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IEFA",
+    "name": "EAFE broad",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IEMG",
+    "name": "Core emerging",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "SCZ",
+    "name": "EAFE small cap",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EFV",
+    "name": "EAFE value",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EFG",
+    "name": "EAFE growth",
+    "asset_class": "Azioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "ACWI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "VGK",
+    "name": "Europe",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EZU",
+    "name": "Eurozone",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWU",
+    "name": "United Kingdom",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWG",
+    "name": "Germany",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWQ",
+    "name": "France",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWI",
+    "name": "Italy",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWP",
+    "name": "Spain",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWL",
+    "name": "Switzerland",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWD",
+    "name": "Sweden",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWN",
+    "name": "Netherlands",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EPOL",
+    "name": "Poland",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "GREK",
+    "name": "Greece",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VGK",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWJ",
+    "name": "Japan",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "DXJ",
+    "name": "Japan currency hedged",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWA",
+    "name": "Australia",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWH",
+    "name": "Hong Kong",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWS",
+    "name": "Singapore",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWT",
+    "name": "Taiwan",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWY",
+    "name": "South Korea",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "INDA",
+    "name": "India",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EIDO",
+    "name": "Indonesia",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWM",
+    "name": "Malaysia",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "THD",
+    "name": "Thailand",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "VNM",
+    "name": "Vietnam",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "VEA",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "MCHI",
+    "name": "China broad",
+    "asset_class": "Azioni",
+    "region": "Cina",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "MCHI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "FXI",
+    "name": "China large cap",
+    "asset_class": "Azioni",
+    "region": "Cina",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "MCHI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "KWEB",
+    "name": "China internet",
+    "asset_class": "Azioni",
+    "region": "Cina",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "MCHI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "ASHR",
+    "name": "China A shares",
+    "asset_class": "Azioni",
+    "region": "Cina",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "MCHI",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWC",
+    "name": "Canada",
+    "asset_class": "Azioni",
+    "region": "Americhe e altri EM",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EEM",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWZ",
+    "name": "Brazil",
+    "asset_class": "Azioni",
+    "region": "Americhe e altri EM",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EEM",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EWW",
+    "name": "Mexico",
+    "asset_class": "Azioni",
+    "region": "Americhe e altri EM",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EEM",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "ECH",
+    "name": "Chile",
+    "asset_class": "Azioni",
+    "region": "Americhe e altri EM",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EEM",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EZA",
+    "name": "South Africa",
+    "asset_class": "Azioni",
+    "region": "Americhe e altri EM",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EEM",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "TUR",
+    "name": "Turkey",
+    "asset_class": "Azioni",
+    "region": "Americhe e altri EM",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EEM",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EIS",
+    "name": "Israel",
+    "asset_class": "Azioni",
+    "region": "Americhe e altri EM",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EEM",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "KSA",
+    "name": "Saudi Arabia",
+    "asset_class": "Azioni",
+    "region": "Americhe e altri EM",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EEM",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLB",
+    "name": "Materials",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLE",
+    "name": "Energy",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLF",
+    "name": "Financials",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLI",
+    "name": "Industrials",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLK",
+    "name": "Technology",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLP",
+    "name": "Consumer staples",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLU",
+    "name": "Utilities",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLV",
+    "name": "Healthcare",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLY",
+    "name": "Consumer discretionary",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLRE",
+    "name": "Real estate",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XLC",
+    "name": "Communication services",
+    "asset_class": "Azioni",
+    "region": "Settori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "SOXX",
+    "name": "Semiconductors",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "SMH",
+    "name": "Semiconductors",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XBI",
+    "name": "Biotechnology",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IBB",
+    "name": "Biotechnology",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "KRE",
+    "name": "Regional banks",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "KBE",
+    "name": "Banks",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "ITB",
+    "name": "Home construction",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XHB",
+    "name": "Homebuilders",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XME",
+    "name": "Metals and mining",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IYT",
+    "name": "Transportation",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XRT",
+    "name": "Retail",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "XOP",
+    "name": "Oil and gas exploration",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "OIH",
+    "name": "Oil services",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IGV",
+    "name": "Software",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "CIBR",
+    "name": "Cybersecurity",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "TAN",
+    "name": "Solar",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "ICLN",
+    "name": "Global clean energy",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "LIT",
+    "name": "Lithium and battery tech",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "URA",
+    "name": "Uranium equity",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "GDX",
+    "name": "Gold miners",
+    "asset_class": "Azioni",
+    "region": "Sottosettori USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "SPY",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "BIL",
+    "name": "Treasury bills 1-3m",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "SHY",
+    "name": "Treasury 1-3y",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IEI",
+    "name": "Treasury 3-7y",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IEF",
+    "name": "Treasury 7-10y",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "TLT",
+    "name": "Treasury 20+y",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "GOVT",
+    "name": "US Treasury broad",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "TIP",
+    "name": "TIPS broad",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "STIP",
+    "name": "TIPS short",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "AGG",
+    "name": "US aggregate",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "BND",
+    "name": "US total bond",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "LQD",
+    "name": "Investment grade corporate",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "VCIT",
+    "name": "Intermediate corporate",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "HYG",
+    "name": "High yield corporate",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "JNK",
+    "name": "High yield corporate",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "MBB",
+    "name": "Mortgage backed securities",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "BKLN",
+    "name": "Senior loans",
+    "asset_class": "Obbligazioni",
+    "region": "USA",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "AGG",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "BNDX",
+    "name": "International bond USD hedged",
+    "asset_class": "Obbligazioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "BNDX",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "IGOV",
+    "name": "International government",
+    "asset_class": "Obbligazioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "BNDX",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "BWX",
+    "name": "International Treasury",
+    "asset_class": "Obbligazioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "BNDX",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EMB",
+    "name": "EM sovereign USD",
+    "asset_class": "Obbligazioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "BNDX",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "EMLC",
+    "name": "EM local currency debt",
+    "asset_class": "Obbligazioni",
+    "region": "Globale",
+    "kind": "ETF",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "BNDX",
+    "exposure_note": "Proxy quotato USA; UCITS e negoziabilità non verificati. Valuta di quotazione USD diversa dalle esposizioni sottostanti. Costi, tracking error, liquidità e duration da verificare presso emittente."
+  },
+  {
+    "symbol": "GLD",
+    "name": "Gold physical trust",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "IAU",
+    "name": "Gold physical trust",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "SLV",
+    "name": "Silver physical trust",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "PPLT",
+    "name": "Platinum physical trust",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "PALL",
+    "name": "Palladium physical trust",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "DBC",
+    "name": "Broad commodity futures",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "DBA",
+    "name": "Agriculture futures",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "USO",
+    "name": "Oil futures",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "UNG",
+    "name": "Natural gas futures",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "CPER",
+    "name": "Copper futures",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "CORN",
+    "name": "Corn futures",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "WEAT",
+    "name": "Wheat futures",
+    "asset_class": "Commodities",
+    "region": "Globale",
+    "kind": "ETP",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "DBC",
+    "exposure_note": "Struttura trust/commodity pool da verificare; futures con roll yield. Non presumere UCITS o replica spot."
+  },
+  {
+    "symbol": "EURUSD=X",
+    "name": "EUR/USD",
+    "asset_class": "Forex",
+    "region": "Globale",
+    "kind": "FX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EURUSD=X",
+    "exposure_note": "Benchmark valutario indicativo, non ETF; volume centralizzato non disponibile."
+  },
+  {
+    "symbol": "GBPUSD=X",
+    "name": "GBP/USD",
+    "asset_class": "Forex",
+    "region": "Globale",
+    "kind": "FX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EURUSD=X",
+    "exposure_note": "Benchmark valutario indicativo, non ETF; volume centralizzato non disponibile."
+  },
+  {
+    "symbol": "JPY=X",
+    "name": "USD/JPY",
+    "asset_class": "Forex",
+    "region": "Globale",
+    "kind": "FX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EURUSD=X",
+    "exposure_note": "Benchmark valutario indicativo, non ETF; volume centralizzato non disponibile."
+  },
+  {
+    "symbol": "CHF=X",
+    "name": "USD/CHF",
+    "asset_class": "Forex",
+    "region": "Globale",
+    "kind": "FX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EURUSD=X",
+    "exposure_note": "Benchmark valutario indicativo, non ETF; volume centralizzato non disponibile."
+  },
+  {
+    "symbol": "AUDUSD=X",
+    "name": "AUD/USD",
+    "asset_class": "Forex",
+    "region": "Globale",
+    "kind": "FX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EURUSD=X",
+    "exposure_note": "Benchmark valutario indicativo, non ETF; volume centralizzato non disponibile."
+  },
+  {
+    "symbol": "USDCAD=X",
+    "name": "USD/CAD",
+    "asset_class": "Forex",
+    "region": "Globale",
+    "kind": "FX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EURUSD=X",
+    "exposure_note": "Benchmark valutario indicativo, non ETF; volume centralizzato non disponibile."
+  },
+  {
+    "symbol": "EURGBP=X",
+    "name": "EUR/GBP",
+    "asset_class": "Forex",
+    "region": "Globale",
+    "kind": "FX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EURUSD=X",
+    "exposure_note": "Benchmark valutario indicativo, non ETF; volume centralizzato non disponibile."
+  },
+  {
+    "symbol": "EURJPY=X",
+    "name": "EUR/JPY",
+    "asset_class": "Forex",
+    "region": "Globale",
+    "kind": "FX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "EURUSD=X",
+    "exposure_note": "Benchmark valutario indicativo, non ETF; volume centralizzato non disponibile."
+  },
+  {
+    "symbol": "^VIX",
+    "name": "CBOE volatility index",
+    "asset_class": "Rischio",
+    "region": "USA",
+    "kind": "INDEX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "^VIX",
+    "exposure_note": "Indice informativo non negoziabile; unità propria, non prezzo ETF."
+  },
+  {
+    "symbol": "^VIX9D",
+    "name": "CBOE 9-day volatility",
+    "asset_class": "Rischio",
+    "region": "USA",
+    "kind": "INDEX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "^VIX",
+    "exposure_note": "Indice informativo non negoziabile; unità propria, non prezzo ETF."
+  },
+  {
+    "symbol": "^TNX",
+    "name": "10y Treasury yield index",
+    "asset_class": "Rischio",
+    "region": "USA",
+    "kind": "INDEX",
+    "currency": "PENDING_PROVIDER",
+    "benchmark": "^VIX",
+    "exposure_note": "Indice informativo non negoziabile; unità propria, non prezzo ETF."
+  },
+  {
+    "symbol": "^GSPC",
+    "name": "S&P 500 cash index",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "INDEX",
+    "currency": "punti indice",
+    "benchmark": "SPY",
+    "exposure_note": "Benchmark non negoziabile. Indice price/total return secondo metodologia del gestore; composizione e trattamento dividendi possono differire dal proxy ETF. Nessuna equivalenza implicita o ranking operativo."
+  },
+  {
+    "symbol": "^NDX",
+    "name": "Nasdaq 100 cash index",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "INDEX",
+    "currency": "punti indice",
+    "benchmark": "QQQ",
+    "exposure_note": "Benchmark non negoziabile. Indice price/total return secondo metodologia del gestore; composizione e trattamento dividendi possono differire dal proxy ETF. Nessuna equivalenza implicita o ranking operativo."
+  },
+  {
+    "symbol": "^DJI",
+    "name": "Dow Jones cash index",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "INDEX",
+    "currency": "punti indice",
+    "benchmark": "DIA",
+    "exposure_note": "Benchmark non negoziabile. Indice price/total return secondo metodologia del gestore; composizione e trattamento dividendi possono differire dal proxy ETF. Nessuna equivalenza implicita o ranking operativo."
+  },
+  {
+    "symbol": "^RUT",
+    "name": "Russell 2000 cash index",
+    "asset_class": "Azioni",
+    "region": "USA",
+    "kind": "INDEX",
+    "currency": "punti indice",
+    "benchmark": "IWM",
+    "exposure_note": "Benchmark non negoziabile. Indice price/total return secondo metodologia del gestore; composizione e trattamento dividendi possono differire dal proxy ETF. Nessuna equivalenza implicita o ranking operativo."
+  },
+  {
+    "symbol": "^STOXX50E",
+    "name": "Euro Stoxx 50 cash index",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "INDEX",
+    "currency": "punti indice",
+    "benchmark": "EZU",
+    "exposure_note": "Benchmark non negoziabile. Indice price/total return secondo metodologia del gestore; composizione e trattamento dividendi possono differire dal proxy ETF. Nessuna equivalenza implicita o ranking operativo."
+  },
+  {
+    "symbol": "^GDAXI",
+    "name": "DAX performance index",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "INDEX",
+    "currency": "punti indice",
+    "benchmark": "EWG",
+    "exposure_note": "Benchmark non negoziabile. Indice price/total return secondo metodologia del gestore; composizione e trattamento dividendi possono differire dal proxy ETF. Nessuna equivalenza implicita o ranking operativo."
+  },
+  {
+    "symbol": "^N225",
+    "name": "Nikkei 225 cash index",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "INDEX",
+    "currency": "punti indice",
+    "benchmark": "EWJ",
+    "exposure_note": "Benchmark non negoziabile. Indice price/total return secondo metodologia del gestore; composizione e trattamento dividendi possono differire dal proxy ETF. Nessuna equivalenza implicita o ranking operativo."
+  },
+  {
+    "symbol": "^FTSE",
+    "name": "FTSE 100 cash index",
+    "asset_class": "Azioni",
+    "region": "Europa",
+    "kind": "INDEX",
+    "currency": "punti indice",
+    "benchmark": "EWU",
+    "exposure_note": "Benchmark non negoziabile. Indice price/total return secondo metodologia del gestore; composizione e trattamento dividendi possono differire dal proxy ETF. Nessuna equivalenza implicita o ranking operativo."
+  },
+  {
+    "symbol": "^HSI",
+    "name": "Hang Seng cash index",
+    "asset_class": "Azioni",
+    "region": "Asia Pacifico",
+    "kind": "INDEX",
+    "currency": "punti indice",
+    "benchmark": "EWH",
+    "exposure_note": "Benchmark non negoziabile. Indice price/total return secondo metodologia del gestore; composizione e trattamento dividendi possono differire dal proxy ETF. Nessuna equivalenza implicita o ranking operativo."
+  }
+]

@@ -316,6 +316,12 @@ def _mode_badge(run_type: str, timestamp: str) -> None:
     )
 
 
+def _kpi_metric(container, label: str, value: str) -> None:
+    """Render a compact KPI card with inline help text."""
+    help_text = KPI_HELP.get(label)
+    container.metric(label, value, help=help_text)
+
+
 def _refresh_controls(project_root: Path) -> None:
     """Render a single dashboard-wide refresh action."""
     cols = st.columns([0.22, 0.78])

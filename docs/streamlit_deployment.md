@@ -1,39 +1,13 @@
-# Streamlit Deployment
+# Online deployment — Phase 2B.1
 
-## Recommended Community Cloud Settings
+Repository: `simfed78/Market-Intelligence-Operations-Console`
+Branch: `main`
+Entrypoint: `streamlit_app.py`
 
-- repository: `simfed78/Market-Intelligence-Operations-Console`
-- branch: `main`
-- main file path: `streamlit_app.py`
+The same Community Cloud app connected to this branch should rebuild after its source updates. If it is not already connected, configure these three fields at https://share.streamlit.io/ and deploy. Do not add broker credentials or copy a local database. An existing app URL must be read from the Community Cloud workspace; it cannot be inferred reliably from the repository name.
 
-## Why Use `streamlit_app.py`
+No API key is needed for the public Yahoo chart/FRED CSV adapters. Configure `TRADING_DESK_PUBLIC=1` to explicitly disable Core reads on any platform; Linux without a configured Core root is public by default. Public shortlists use per-visitor Streamlit session state. Mac local use retains the original sanitized, read-only Core monitor.
 
-The dashboard implementation lives in `app/dashboard.py`, but `streamlit_app.py` gives Streamlit Community Cloud a simple root entrypoint.
+First online startup downloads public data only. Subsequent updates use **Aggiorna dati pubblici**. A failed request leaves previous snapshots intact and visible with source timestamps and quality. No sample/synthetic fallback exists in the new entrypoint. Runtime storage is ephemeral; rank changes are unavailable until compatible prior runs exist.
 
-## First Run Behavior
-
-The dashboard can bootstrap itself.
-
-If no saved payload exists yet, the app will offer a button to generate an initial sample payload so the UI can render without committed runtime artifacts.
-
-## Environment Variables
-
-Optional:
-
-- `FRED_API_KEY`
-
-If not provided, the app can still run using fallback/sample paths where supported.
-
-## Deploy Steps
-
-1. Log in to Streamlit Community Cloud.
-2. Create a new app from GitHub.
-3. Select repo `simfed78/Market-Intelligence-Operations-Console`.
-4. Choose branch `main`.
-5. Set main file path to `streamlit_app.py`.
-6. Add secrets only if you want live FRED access.
-7. Deploy.
-
-## Operational Note
-
-The dashboard is research-oriented. On hosted environments, initial runs may use fallback or synthetic data if live market and macro access is unavailable.
+See [model, methodology and operating guide](phase2b1_opportunities.md). Publishing code is separate from verifying the live page; the live URL and rendered check must be recorded in the handoff.

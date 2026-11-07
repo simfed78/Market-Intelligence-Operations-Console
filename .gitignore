@@ -4,6 +4,10 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 .env
+data/intelligence_inbox/
+data/intelligence_exports/
+.venv-phase2b/
+.runtime-python
 logs/
 data/db/
 data/cache/

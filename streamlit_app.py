@@ -1,6 +1,6 @@
 """Root Streamlit entrypoint for hosted deployments."""
 
-from app.dashboard import main
+from app.intelligence_dashboard import main
 
 
 if __name__ == "__main__":

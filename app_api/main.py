@@ -8,6 +8,7 @@ from fastapi import FastAPI
 
 from app_api.routes.history import build_history_router
 from app_api.routes.latest import build_latest_router
+from app_api.routes.intelligence import build_intelligence_router
 
 
 def create_app(project_root: Path | None = None) -> FastAPI:
@@ -16,6 +17,7 @@ def create_app(project_root: Path | None = None) -> FastAPI:
     app = FastAPI(title="Market Intelligence Local API", version="0.1.0")
     app.include_router(build_latest_router(root))
     app.include_router(build_history_router(root))
+    app.include_router(build_intelligence_router(root))
 
     @app.get("/health")
     def health() -> dict[str, str]:

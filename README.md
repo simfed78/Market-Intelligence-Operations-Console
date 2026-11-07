@@ -1,5 +1,9 @@
 # Market Intelligence Engine
 
+## Phase 2B.1 — opportunity discovery
+
+Il nuovo entrypoint `streamlit_app.py` apre la dashboard di ricerca autonoma. Avvio: `bash scripts/start_dashboard.sh`. Aggiornamento: `bash scripts/refresh_intelligence.sh`. [Top10, metodologia e accesso online](docs/phase2b1_opportunities.md) · [Guida Phase 2B](docs/phase2b_dashboard.md). I workflow descritti sotto rimangono legacy e non alimentano la nuova dashboard.
+
 Market Intelligence Engine is a local-first Python decision-support platform for SPX500 regime research, sector rotation, cyclical opportunity detection, proxy validation, and operational watchlist review.
 
 Phase 4 keeps the system research-first:

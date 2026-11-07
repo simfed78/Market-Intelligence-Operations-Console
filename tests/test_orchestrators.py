@@ -5,7 +5,9 @@ from src.orchestrator.run_daily_cycle import DailyCycleRunner
 from src.orchestrator.run_weekly_cycle import WeeklyCycleRunner
 
 
-def test_daily_and_weekly_runners():
+def test_daily_and_weekly_runners(monkeypatch):
+    # This legacy engineering test verifies orchestration, not live provider availability.
+    monkeypatch.setattr("src.data.market_data.yf", None)
     root = Path(__file__).resolve().parents[1]
     config = load_config_bundle(root / "config")
     daily = DailyCycleRunner(config=config, project_root=root).run(run_type="daily", persist=False)
