@@ -21,12 +21,13 @@ from src.intelligence.service import load_dashboard
 from src.intelligence.store import Store
 from src.intelligence.hosted import start_public_refresh, public_status
 from src.intelligence.opportunities import rank_opportunities, top10, MODEL_VERSION, WEIGHTS
+from app.fineco_workspace import fineco_workspace
 
 GREEN = "#1f4f46"
 AMBER = "#ad7529"
 RED = "#ad4b48"
 COLORS = [GREEN, "#758eab", AMBER, "#8d76a2", "#73a198", RED, "#7d8165"]
-VIEWS = ["Overview", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
+VIEWS = ["Overview", "Fineco · Piano operativo", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
 HORIZONS = {"1 mese": ("momentum_1m", "ret_21"), "3 mesi": ("momentum_3m", "ret_63"), "6 mesi": ("momentum_6m", "ret_126"), "12 mesi": ("momentum_12m", "ret_252")}
 READINESS_ORDER = {"research candidate": 2, "watch": 1, "blocked": 0}
 
@@ -566,6 +567,8 @@ def main() -> None:
     st.caption(f"{view} · {len(filtered)} strumenti nel filtro · {horizon}")
     if view == "Overview":
         _overview(data, filtered, score, ret)
+    elif view == "Fineco · Piano operativo":
+        fineco_workspace(data)
     elif view == "Asset explorer":
         _explorer(data, filtered)
     elif view == "Capital flows":
