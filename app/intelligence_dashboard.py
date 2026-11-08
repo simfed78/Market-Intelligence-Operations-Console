@@ -559,6 +559,9 @@ def main() -> None:
     if st.query_params.get("fineco") == "1":
         st.session_state["workspace"] = "Fineco · Piano operativo"
         del st.query_params["fineco"]
+    if st.query_params.get("etoro") == "1":
+        st.session_state["workspace"] = "eToro · Piano operativo"
+        del st.query_params["etoro"]
     _styles()
     st.title("Trading Desk")
     st.markdown(
