@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from urllib.request import Request, urlopen
 import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
 
 from src.intelligence.fineco_planner import (
@@ -42,6 +43,10 @@ def _signal_text(signal):
 
 
 def fineco_workspace(data: dict) -> None:
+    st.markdown(
+        '<div class="td-section-kicker">BROKER WORKSPACE / CAPITAL ALLOCATION</div>',
+        unsafe_allow_html=True,
+    )
     st.subheader("Fineco · Azioni da valutare")
     st.caption(
         "Portafoglio buy & hold tattico · orizzonte 12 mesi · massimo 8 strumenti in questa "
@@ -135,6 +140,40 @@ def fineco_workspace(data: dict) -> None:
                 "ISIN":st.column_config.TextColumn("ISIN"),
             },
         )
+        if plan["plan_ready"]:
+            buckets=[
+                ("VALL · azionario globale",next((a["proposed_eur"] for a in plan["rows"]
+                                                 if a["code"]=="VALL"),0),"#0a8b85"),
+                ("PRAB · governativi EUR",next((a["proposed_eur"] for a in plan["rows"]
+                                                if a["code"]=="PRAB"),0),"#6b90bc"),
+                ("SGLN · oro fisico",next((a["proposed_eur"] for a in plan["rows"]
+                                          if a["code"]=="SGLN"),0),"#d3a154"),
+                ("Liquidità da conservare",plan["kept_cash_eur"],"#bfcedb"),
+            ]
+            fig=go.Figure(go.Pie(
+                labels=[b[0] for b in buckets],values=[b[1] for b in buckets],
+                hole=.68,sort=False,
+                marker=dict(colors=[b[2] for b in buckets],
+                            line=dict(color="white",width=2)),
+                textposition="outside",textinfo="percent",
+                hovertemplate="%{label}: € %{value:,.0f}<extra></extra>",
+            ))
+            fig.update_layout(
+                title="Distribuzione del budget confermato",
+                height=340,margin=dict(l=8,r=8,t=45,b=0),
+                legend=dict(orientation="h",y=-.18,x=0,font=dict(size=11)),
+                font=dict(color="#173248"),
+                paper_bgcolor="rgba(0,0,0,0)",
+                annotations=[dict(x=.5,y=.5,text="EUR",showarrow=False,
+                                  font=dict(size=17,color="#087f7c"))],
+            )
+            st.plotly_chart(fig,width="stretch",key="fineco_budget_allocation",
+                            config={"displaylogo":False})
+        else:
+            st.caption(
+                "Grafico di allocazione disponibile dopo conferma dei fondi "
+                "e dei valori effettivi del portafoglio."
+            )
         st.caption(
             "Somme indicative prima dei costi, non quantità eseguibili. Fineco acquista "
             "quote intere: verificare sempre prezzo/valuta di quotazione, commissioni "
@@ -148,6 +187,18 @@ def fineco_workspace(data: dict) -> None:
                 mime="text/csv",
                 key="fineco_export_actions",
             )
+    signals=plan["signals"]
+    signal_cols=st.columns(3)
+    for col,label,signal in zip(
+        signal_cols,
+        ("Azionario globale", "Oro fisico", "Commodities"),
+        (signals["world_12m"],signals["gold_3m"],signals["commodities_3m"]),
+    ):
+        with col:
+            with st.container(border=True):
+                st.caption(label)
+                st.markdown("**"+signal["state"]+"**")
+                st.caption(signal.get("reason",""))
     with st.expander("4. Perché queste tre scelte? Traduzione dei segnali multi-asset"):
         st.markdown("**VALL · azionario globale**")
         st.write(
