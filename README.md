@@ -25,6 +25,15 @@ Phase 4 keeps the system research-first:
 - `app`: Streamlit operational console
 - `app_api`: local FastAPI service layer
 
+## Phase 2B.2 — read-only research export for weekly Fineco/eToro reports
+
+The existing opportunity engine now has a proposed fail-closed, versioned
+JSON publication workflow on a dedicated GitHub branch. The export contains
+only derived research indicators, freshness and quality (never broker state),
+so the Monday trading report can inspect the same model without scraping
+Streamlit's UI. **An unreviewed branch or missing first Actions publication
+is not a live data feed.** See [Phase 2B.2 integration guide](docs/phase2b2_research_export.md).
+
 ## Phase 4 Operational Additions
 
 - persistent SQLite storage for runs, scores, rankings, alerts, baskets, and transitions
