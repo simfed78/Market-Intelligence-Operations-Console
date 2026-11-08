@@ -7,9 +7,16 @@ connection or independent application. Access it from the sidebar:
 
 ## What is (and is not) available
 
-- Existing multi-asset technical research remains the data source, using the
-  **last completed run** and the **full** 3m/12m model tables, not just the
-  globally ranked Top 10.
+- Existing multi-asset technical research remains the data source. The
+  workspace **prefers the qualified GitHub `research-brief.v1` export** from
+  `research-data/exports/research/latest.json`; the publisher now includes an
+  explicitly allowlisted `fineco_proxies` group for 3m/12m (the Top 10 alone
+  cannot describe global VT/ACWI when they are not leaders).
+- If GitHub retrieval fails or the export fails quality/version/freshness
+  checks, the workspace falls back to the last completed Streamlit local
+  model, with the same 72h freshness gate. It never uses missing/stale
+  ranks as if they were valid and does not import any user brokerage records
+  from GitHub. All data uses the existing ranking engine, not new scores.
 - Sector ETFs such as XLV/XLP and oil/broad commodities USO/DBC are contextual
   research inputs; they **do not** become suggested Fineco purchases.
 - Three instruments are explicitly permitted for new capital planning:
