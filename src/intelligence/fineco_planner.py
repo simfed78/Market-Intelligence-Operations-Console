@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import math
+import pandas as pd
 
 # Existing legacy instruments have purposely no guessed ISIN. The buy set
 # is exactly three instruments. This is a *planning* registry, not a broker
@@ -94,6 +95,52 @@ def _validated_signal(rows, symbols):
     )
 
 
+PUBLIC_PROXIES = frozenset(("VT", "ACWI", "GLD", "IAU", "USO", "DBC", "XLV", "XLP"))
+
+def dashboard_from_public_brief(brief, *, now=None):
+    """Validate and translate the versioned GitHub research snapshot; no broker data."""
+    now = _dt(now or datetime.now(timezone.utc))
+    if not isinstance(brief, dict) or any((
+        brief.get("schema_version") != "research-brief.v1",
+        brief.get("mode") != "RESEARCH_ONLY",
+        brief.get("publication_status") != "QUALIFIED_RESEARCH",
+        brief.get("model_version") != "technical-priority-v1",
+    )):
+        raise ValueError("Contratto di ricerca non valido")
+    generated = _dt(brief["generated_at"])
+    completed = _dt(brief["completed_run_at"])
+    if (generated < completed or generated > now or completed > now
+            or (now-generated).total_seconds() > MAX_SNAPSHOT_AGE_HOURS * 3600
+            or (now-completed).total_seconds() > MAX_SNAPSHOT_AGE_HOURS * 3600):
+        raise ValueError("Snapshot obsoleto, futuro o temporalmente incoerente")
+    quality = brief.get("quality") or {}
+    ratio = float(quality.get("valid_ratio", 0))
+    if not math.isfinite(ratio) or ratio < .70 or ratio > 1:
+        raise ValueError("Copertura prezzi insufficiente")
+    opportunities = {}
+    for horizon in ("3m", "12m"):
+        raw = ((brief.get("horizons") or {}).get(horizon) or {}).get("fineco_proxies")
+        if not isinstance(raw, list) or not raw:
+            raise ValueError("Proxy Fineco mancanti dalla pubblicazione")
+        rows = []
+        for item in raw:
+            if not isinstance(item, dict) or item.get("symbol") not in PUBLIC_PROXIES:
+                raise ValueError("Simbolo non ammesso")
+            rows.append({k:item.get(k) for k in (
+                "symbol","price_status","signal_state","model_version",
+                "technical_score","timing_score","observed_at",
+            )})
+        if len({r["symbol"] for r in rows}) != len(rows):
+            raise ValueError("Proxy duplicati")
+        opportunities[horizon] = pd.DataFrame(rows)
+    return {
+        "latest_run":{"run_at":completed.isoformat()},
+        "quality":{"valid_ratio":ratio},
+        "opportunities":opportunities,
+        "macro":{"status":str(quality.get("macro_status") or "MISSING")},
+        "source_kind":"qualified-public-export",
+    }
+
 def build_fineco_plan(
     dashboard, *,
     available_cash_eur=0,
@@ -126,10 +173,11 @@ def build_fineco_plan(
         except (TypeError, ValueError):
             age = None
     metrics = dashboard.get("metrics") if isinstance(dashboard, dict) else None
-    valid_coverage = (
-        "price_status" in metrics and len(metrics) and
-        metrics.price_status.eq("VALID").mean() >= .70
-    ) if metrics is not None else False
+    has_metrics = metrics is not None and len(metrics) and "price_status" in metrics
+    coverage = float(metrics.price_status.eq("VALID").mean()) if has_metrics else 0.0
+    if dashboard.get("source_kind") == "qualified-public-export":
+        coverage = float((dashboard.get("quality") or {}).get("valid_ratio", 0))
+    valid_coverage = math.isfinite(coverage) and .70 <= coverage <= 1
     fresh = age is not None and 0 <= age <= MAX_SNAPSHOT_AGE_HOURS and bool(valid_coverage)
 
     ranked = dashboard.get("opportunities", {}) if fresh else {}
@@ -139,8 +187,7 @@ def build_fineco_plan(
     energy = _validated_signal(ranked.get("3m"), ("USO", "DBC"))
     defensive = _validated_signal(ranked.get("3m"), ("XLV", "XLP"))
     quality = dict(fresh=fresh, age_hours=round(age, 2) if age is not None else None,
-                   valid_coverage=round(float(metrics.price_status.eq("VALID").mean()), 3)
-                   if metrics is not None and len(metrics) and "price_status" in metrics else 0,
+                   valid_coverage=round(coverage, 3),
                    as_of=latest.get("run_at") if isinstance(latest, dict) else None,
                    macro_status=(dashboard.get("macro") or {}).get("status", "MISSING")
                    if isinstance(dashboard, dict) else "MISSING")
