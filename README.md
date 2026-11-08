@@ -44,6 +44,21 @@ explicitly confirmed available cash are required before any indicative
 amount is shown. U.S.-listed sector proxies never become automatic Fineco
 buy orders. See [operating instructions](docs/phase2b3_fineco_workspace.md).
 
+## Phase 2B.4 — eToro REAL risk cockpit and refreshed interface
+
+The hosted Streamlit dashboard includes a distinct **eToro · Piano operativo**
+workspace in the left navigation and a direct mobile link via `?etoro=1`.
+It ingests only an explicitly **user-uploaded, short-lived, read-only**
+`etoro-private-snapshot.v1` JSON; ChatGPT's eToro plugin credentials are
+never transferred to or stored in the public hosting service. It charts
+portfolio mark-to-market composition, leveraged SPX500 stress scenarios and
+risk-priority actions. No orders, broker calls, transfers or automatic
+trading are enabled. Fineco remains a separate EUR-funded buy-and-hold sleeve.
+
+The dashboard visual system has been refreshed with mobile-responsive cards,
+technical signal bars and clear priority/risk indicators. See
+[Phase 2B.4 integration & privacy](docs/phase2b4_etoro_visual_workspace.md).
+
 ## Phase 4 Operational Additions
 
 - persistent SQLite storage for runs, scores, rankings, alerts, baskets, and transitions
