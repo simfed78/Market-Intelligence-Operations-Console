@@ -34,6 +34,16 @@ so the Monday trading report can inspect the same model without scraping
 Streamlit's UI. **An unreviewed branch or missing first Actions publication
 is not a live data feed.** See [Phase 2B.2 integration guide](docs/phase2b2_research_export.md).
 
+## Fineco · Piano operativo (Phase 2B.3)
+
+Use the **Fineco · Piano operativo** sidebar section to translate the
+existing global market indicators into a **fixed three-instrument new-buy
+set**: VALL (global equity), PRAB (EUR 0–1Y government bonds), and SGLN
+(physical-gold ETC). A separate session-private account-value input and
+explicitly confirmed available cash are required before any indicative
+amount is shown. U.S.-listed sector proxies never become automatic Fineco
+buy orders. See [operating instructions](docs/phase2b3_fineco_workspace.md).
+
 ## Phase 4 Operational Additions
 
 - persistent SQLite storage for runs, scores, rankings, alerts, baskets, and transitions

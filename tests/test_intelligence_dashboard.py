@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
 from app import intelligence_dashboard as ui
+from app import fineco_workspace as fineco_ui
 from src.intelligence.opportunities import rank_opportunities,HORIZONS
 
 class MemoryStore:
@@ -37,6 +38,7 @@ def launch(monkeypatch,model):
     ui._load.clear();MemoryStore.shortlist=[]
     monkeypatch.setattr(ui,'load_dashboard',lambda root:deepcopy(model))
     monkeypatch.setattr(ui,'Store',MemoryStore)
+    monkeypatch.setattr(fineco_ui,'_published_research',lambda:None)
     return AppTest.from_string('from app.intelligence_dashboard import main\nmain()',default_timeout=25).run()
 
 
@@ -130,3 +132,15 @@ def test_mobile_compact_cards_put_action_near_ticker(monkeypatch,dashboard_model
     assert any('Da approfondire' in w.value for w in app.markdown)
     buttons[0].click().run();check(app)
     assert app.radio[0].value=='Asset explorer'
+
+
+def test_fineco_workspace_default_is_private_and_no_unfunded_orders(monkeypatch,dashboard_model):
+    app=launch(monkeypatch,dashboard_model)
+    app.radio[0].set_value("Fineco · Piano operativo").run();check(app)
+    actions=app.dataframe[0].value
+    assert set(actions["ETF/ETC"])=={"VALL","PRAB","SGLN"}
+    assert actions["EUR massimo"].eq(0).all()
+    assert all(actions["Azione"]=="ATTENDERE")
+    assert not any("612.56" in str(m.value) for m in app.markdown)
+    assert any("Budget investibile non confermato" in w.value for w in app.warning)
+    assert any("Commodities" in m.value for m in app.markdown)

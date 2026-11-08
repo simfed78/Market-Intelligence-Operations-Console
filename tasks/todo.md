@@ -58,3 +58,12 @@ Hosted correction: 82 tests passed; mobile AppTest exposes 10 cards and zero mac
 - [ ] Merge approved PR and verify the first publication to research-data branch.
 - [ ] Read the actual published JSON through the Monday-report GitHub connection.
 - [ ] Verify live Streamlit remains working and compare run timestamps/coverage.
+
+## Phase 2B.3 — Fineco limited-universe operational workspace
+- [x] Reuse existing Streamlit and last completed research ranking; no new prototype.
+- [x] Add Fineco sidebar with session-only portfolio input, after-salary cash confirmation and three-core buy candidates.
+- [x] Add US-proxy vs EU-wrapper distinctions and commodity context without sector proliferation.
+- [x] Fail closed for old/missing market data, missing cash, no broker prices, excessive concentration or small orders.
+- [x] Add pure offline tests, AppTest check and CI validation workflow.
+- [ ] Review PR test output and merge only after code checks succeed.
+- [ ] Verify live hosted dashboard deploy, UI and input privacy on iPhone.
