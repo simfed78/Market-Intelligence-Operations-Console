@@ -1,10 +1,34 @@
 """Session-private Fineco decision panel: no holdings in public code or exports."""
 from __future__ import annotations
 
+import json
+from urllib.request import Request, urlopen
 import pandas as pd
 import streamlit as st
 
-from src.intelligence.fineco_planner import FINECO_POSITIONS, build_fineco_plan
+from src.intelligence.fineco_planner import (
+    FINECO_POSITIONS, build_fineco_plan, dashboard_from_public_brief,
+)
+
+PUBLIC_DATA_URL = (
+    "https://raw.githubusercontent.com/simfed78/"
+    "Market-Intelligence-Operations-Console/research-data/"
+    "exports/research/latest.json"
+)
+
+
+@st.cache_data(ttl=1800, show_spinner=False)
+def _published_research():
+    """Read only the public, derived GitHub brief; never write account data."""
+    try:
+        req = Request(PUBLIC_DATA_URL, headers={"User-Agent":"MarketIntelligenceFinecoReadOnly/1.0"})
+        with urlopen(req, timeout=8) as response:
+            raw = response.read(1_500_001)
+        if len(raw) > 1_500_000:
+            return None
+        return dashboard_from_public_brief(json.loads(raw.decode("utf-8")))
+    except (OSError, UnicodeError, ValueError, TypeError, KeyError):
+        return None
 
 
 def _signal_text(signal):
@@ -56,8 +80,15 @@ def fineco_workspace(data: dict) -> None:
             "Confermo di aver aggiornato TUTTI i controvalori (inclusi gli zeri reali)",
             value=False, key="fineco_holdings_confirmed",
         )
+    published = _published_research()
+    research = published if published is not None else data
+    st.caption(
+        "Segnali: " + ("snapshot GitHub qualificato" if published is not None
+                      else "snapshot del server Streamlit (se disponibile)")
+        + " · nessun prezzo Fineco stimato dai proxy USA."
+    )
     plan = build_fineco_plan(
-        data, available_cash_eur=budget, cash_confirmed=confirmed_cash,
+        research, available_cash_eur=budget, cash_confirmed=confirmed_cash,
         holdings=holdings, holdings_confirmed=holdings_confirmed,
     )
     quality = plan["quality"]
@@ -73,6 +104,11 @@ def fineco_workspace(data: dict) -> None:
             st.error(
                 "Dati della dashboard mancanti, obsoleti o insufficienti. "
                 "Nessuna proposta d'acquisto viene abilitata."
+            )
+        if quality["macro_status"] in ("MISSING", "DEGRADED"):
+            st.caption(
+                "Dati macro della dashboard non qualificati: le proposte riflettono "
+                "solo regole di portafoglio e ricerca tecnica, non una previsione macro."
             )
         if not confirmed_cash or budget == 0:
             st.warning("Budget investibile non confermato: **0 € di acquisti suggeriti ora**.")
