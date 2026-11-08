@@ -130,3 +130,15 @@ def test_mobile_compact_cards_put_action_near_ticker(monkeypatch,dashboard_model
     assert any('Da approfondire' in w.value for w in app.markdown)
     buttons[0].click().run();check(app)
     assert app.radio[0].value=='Asset explorer'
+
+
+def test_fineco_workspace_default_is_private_and_no_unfunded_orders(monkeypatch,dashboard_model):
+    app=launch(monkeypatch,dashboard_model)
+    app.radio[0].set_value("Fineco · Piano operativo").run();check(app)
+    actions=app.dataframe[0].value
+    assert set(actions["ETF/ETC"])=={"VALL","PRAB","SGLN"}
+    assert actions["EUR massimo"].eq(0).all()
+    assert all(actions["Azione"]=="ATTENDERE")
+    assert not any("612.56" in str(m.value) for m in app.markdown)
+    assert any("Budget investibile non confermato" in w.value for w in app.warning)
+    assert any("Commodities" in m.value for m in app.markdown)
