@@ -17,6 +17,9 @@ from .opportunities import HORIZONS, MODEL_VERSION, top10
 from .service import load_dashboard
 
 SCHEMA_VERSION = "research-brief.v1"
+# Explicit public research proxies used by the limited Fineco workspace.
+# None is an account holding, broker-order symbol, or confirmed EU UCITS listing.
+FINECO_RESEARCH_PROXIES = ("VT", "ACWI", "GLD", "IAU", "USO", "DBC", "XLV", "XLP")
 MIN_VALID_RATIO = 0.70
 MAX_RUN_AGE_HOURS = 12
 # Strict allowlist: no broker identifiers, raw provider payloads, or price history.
@@ -113,6 +116,9 @@ def build_brief(data, *, now=None):
         horizons[horizon] = {
             "top10": [_asset(row) for row in global_top.to_dict("records")],
             "leaders_by_asset_class": class_leaders,
+            "fineco_proxies": [_asset(row) for row in ranked[
+                ranked.symbol.isin(FINECO_RESEARCH_PROXIES)
+            ].sort_values("symbol").to_dict("records")],
             "eligible_count": len(allowed),
         }
 
