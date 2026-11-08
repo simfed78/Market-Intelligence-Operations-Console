@@ -42,6 +42,7 @@ def launch(monkeypatch,model):
     monkeypatch.setattr(ui,'Store',MemoryStore)
     monkeypatch.setattr(fineco_ui,'_published_research',lambda:None)
     monkeypatch.setattr(etoro_ui,'_read_private_upload',lambda:None)
+    monkeypatch.setattr(etoro_ui,'_published_research',lambda:None)
     return AppTest.from_string('from app.intelligence_dashboard import main\nmain()',default_timeout=25).run()
 
 
