@@ -213,10 +213,22 @@ def etoro_workspace(data: dict) -> None:
     st.markdown("### Azioni da valutare, in ordine di priorità")
     for action in result["actions"]:
         with st.container(border=True):
+            grade = action["severity"]
+            color = {
+                "CRITICA":"#e36b64","ALTA":"#e69b55",
+                "MEDIA":"#b3892d","OSSERVAZIONE":"#087f7c",
+            }.get(grade,"#087f7c")
+            st.markdown(
+                '<span style="display:inline-block;border-radius:999px;'
+                'padding:4px 10px;margin:0 0 6px;font-size:.72rem;'
+                'font-weight:800;letter-spacing:.07em;background:'
+                + color + '18;color:' + color + '">'
+                + grade + '</span>',unsafe_allow_html=True
+            )
             st.markdown(
                 f"**{action['priority']:02d}. {action['instrument']} — {action['verb']}**"
             )
-            st.caption(action["severity"]+" · "+action["reason"])
+            st.caption(action["reason"])
             st.write(action["checkpoint"])
     st.markdown("### Esposizioni e posizioni")
     overview=pd.DataFrame(result["holdings"])
