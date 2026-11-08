@@ -1,0 +1,94 @@
+name: Research brief - validate and publish
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "src/intelligence/**"
+      - "tests/test_research_report_export.py"
+      - ".github/workflows/research-brief.yml"
+  pull_request:
+    paths:
+      - "src/intelligence/**"
+      - "tests/test_research_report_export.py"
+      - ".github/workflows/research-brief.yml"
+  schedule:
+    # 05:10 UTC Mon-Fri = 06:10 CET / 07:10 CEST, before the 08:00 Rome report.
+    - cron: "10 5 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: research-brief-publication
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install existing project dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Research integrity and export tests
+        env:
+          TRADING_DESK_PUBLIC: "1"
+        run: python -m pytest -q tests/test_research_report_export.py tests/test_opportunities.py tests/test_intelligence.py
+
+  publish:
+    # Never publish from unreviewed PRs. Runs on the default branch only.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install existing project dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Refresh public market and macro sources
+        env:
+          TRADING_DESK_PUBLIC: "1"
+          TRADING_DESK_ROOT: ""
+        run: python -m src.intelligence.refresh --root . --request-interval 0.4 --budget-seconds 600
+      - name: Export only verified, derived research metrics
+        env:
+          TRADING_DESK_PUBLIC: "1"
+          TRADING_DESK_ROOT: ""
+        run: |
+          mkdir -p "$RUNNER_TEMP/research-brief/history"
+          python -m src.intelligence.report_export --root . \
+            --output "$RUNNER_TEMP/research-brief/latest.json" \
+            --history-dir "$RUNNER_TEMP/research-brief/history"
+      - name: Publish to the separate research-data branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin research-data
+          git switch -C research-data FETCH_HEAD
+          mkdir -p exports/research/history
+          cp "$RUNNER_TEMP/research-brief/latest.json" exports/research/latest.json
+          cp "$RUNNER_TEMP/research-brief/history/"*.json exports/research/history/
+          git add exports/research/latest.json exports/research/history/
+          if git diff --cached --quiet; then
+            echo "No qualified research changes to publish"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "data: publish qualified research brief"
+          git push origin HEAD:research-data

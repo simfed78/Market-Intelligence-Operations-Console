@@ -142,8 +142,15 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,default=Path('.'))
     parser.add_argument('--import-inbox',type=Path)
+    parser.add_argument('--request-interval',type=float,default=0.0,
+                        help='Minimum seconds between provider requests (CI pacing).')
+    parser.add_argument('--budget-seconds',type=float,default=None,
+                        help='Maximum time budget for submitting provider requests.')
     args=parser.parse_args()
-    result=refresh_sources(args.root,args.import_inbox)
+    if args.request_interval < 0 or (args.budget_seconds is not None and args.budget_seconds <= 0):
+        parser.error('Request interval must be nonnegative and budget seconds must be positive.')
+    result=refresh_sources(args.root,args.import_inbox,request_interval=args.request_interval,
+                           budget_seconds=args.budget_seconds)
     print(json.dumps(result,indent=2))
     return 0 if result['acquired'] else 1
 
