@@ -1,6 +1,12 @@
 name: Research brief - validate and publish
 
 on:
+  push:
+    branches: ["main"]
+    paths:
+      - "src/intelligence/**"
+      - "tests/test_research_report_export.py"
+      - ".github/workflows/research-brief.yml"
   pull_request:
     paths:
       - "src/intelligence/**"
@@ -57,7 +63,7 @@ jobs:
         env:
           TRADING_DESK_PUBLIC: "1"
           TRADING_DESK_ROOT: ""
-        run: python -m src.intelligence.refresh --root .
+        run: python -m src.intelligence.refresh --root . --request-interval 0.4 --budget-seconds 600
       - name: Export only verified, derived research metrics
         env:
           TRADING_DESK_PUBLIC: "1"
