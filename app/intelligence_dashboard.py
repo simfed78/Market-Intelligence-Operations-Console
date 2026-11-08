@@ -22,13 +22,14 @@ from src.intelligence.store import Store
 from src.intelligence.hosted import start_public_refresh, public_status
 from src.intelligence.opportunities import rank_opportunities, top10, MODEL_VERSION, WEIGHTS
 from app.fineco_workspace import fineco_workspace
+from app.etoro_workspace import etoro_workspace
 
 GREEN = "#1f4f46"
 AMBER = "#ad7529"
 RED = "#ad4b48"
 COLORS = [GREEN, "#758eab", AMBER, "#8d76a2", "#73a198", RED, "#7d8165"]
-APP_RELEASE = "2B.3-FINECO-2026-11-08"
-VIEWS = ["Overview", "Fineco · Piano operativo", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
+APP_RELEASE = "2B.4-RISK-2026-11-08"
+VIEWS = ["Overview", "Fineco · Piano operativo", "eToro · Piano operativo", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
 HORIZONS = {"1 mese": ("momentum_1m", "ret_21"), "3 mesi": ("momentum_3m", "ret_63"), "6 mesi": ("momentum_6m", "ret_126"), "12 mesi": ("momentum_12m", "ret_252")}
 READINESS_ORDER = {"research candidate": 2, "watch": 1, "blocked": 0}
 
@@ -58,13 +59,80 @@ def _number(value, pct: bool = False) -> str:
 
 def _styles() -> None:
     st.markdown("""<style>
-    .stApp [data-testid="stAppViewContainer"] {background:#fcfcf9;}
-    .stApp h1,.stApp h2,.stApp h3 {letter-spacing:-.025em;}
-    .stApp [data-testid="stMetric"] {border:1px solid #e0e7e2;border-radius:12px;padding:.8rem;background:#fff;}
-    .stApp [data-testid="stSidebar"] {border-right:1px solid #dfe6df;}
-    .stApp [data-testid="stDataFrame"] {border-radius:10px;}
-    .stApp .block-container {padding-top:2rem;padding-bottom:3rem;max-width:1600px;}
-    @media(max-width:700px){.stApp .block-container{padding:1rem .8rem 2rem;}.stApp h1{font-size:1.65rem;line-height:1.15;} .stApp h2{font-size:1.35rem;}}
+    :root {--td-ink:#162a3d;--td-muted:#66798d;--td-teal:#087f7c;--td-violet:#6556ab;--td-line:#e2e9f1;}
+    .stApp [data-testid="stAppViewContainer"] {
+      background:radial-gradient(circle at 92% 2%,#e9f5f4 0,#f5f8fc 29%,#f5f8fc 100%);
+      color:var(--td-ink);
+    }
+    .stApp .block-container {padding-top:1.35rem;padding-bottom:3.2rem;max-width:1460px;}
+    .stApp h1,.stApp h2,.stApp h3,.stApp h4 {letter-spacing:-.035em;color:var(--td-ink);font-weight:740;}
+    .stApp h1 {font-size:2.35rem;margin-bottom:.12rem;}
+    .stApp h2 {font-size:1.8rem;}
+    .stApp h3 {font-size:1.35rem;}
+    .stApp [data-testid="stSidebar"] {
+      background:linear-gradient(175deg,#eaf3f4,#f1f5fa 72%);
+      border-right:1px solid #dce6ed;
+    }
+    .stApp [data-testid="stSidebar"] [role="radiogroup"] label {
+      padding:.20rem .45rem;border-radius:10px;transition:background .18s ease;
+    }
+    .stApp [data-testid="stSidebar"] [role="radiogroup"] label:hover {background:#dcebe9;}
+    .stApp [data-testid="stMetric"] {
+      border:1px solid #e0e8f0;border-radius:17px;padding:1rem 1.1rem;
+      background:#fff;box-shadow:0 7px 24px rgba(21,48,66,.045);
+      min-height:118px;
+    }
+    .stApp [data-testid="stMetricLabel"] {color:var(--td-muted);font-size:.84rem;font-weight:650;}
+    .stApp [data-testid="stMetricValue"] {color:var(--td-ink);font-weight:750;letter-spacing:-.04em;}
+    .stApp [data-testid="stVerticalBlockBorderWrapper"]>div,
+    .stApp [data-testid="stExpander"] {
+      border-radius:18px!important;border-color:#dee8ef!important;
+    }
+    .stApp [data-testid="stDataFrame"] {border-radius:14px;overflow:hidden;border:1px solid #dfe7ed;}
+    .stApp div[data-testid="stButton"] button[kind="primary"] {
+      border:0;border-radius:12px;
+      background:linear-gradient(120deg,#0a7777,#1769a5);
+      color:white;min-height:45px;font-weight:700;
+      box-shadow:0 8px 20px rgba(8,111,123,.18);
+    }
+    .stApp button {border-radius:10px;}
+    .td-hero {
+      position:relative;overflow:hidden;border-radius:22px;
+      padding:1.3rem 1.6rem;margin:.65rem 0 1rem;
+      background:linear-gradient(110deg,#142b3c,#0e5262 61%,#087f7c);
+      box-shadow:0 20px 38px rgba(13,47,67,.13);color:#e2f6f6;
+    }
+    .td-hero:after {
+      content:"";position:absolute;width:250px;height:250px;border-radius:50%;
+      right:-95px;top:-110px;border:35px solid rgba(255,255,255,.08);
+    }
+    .td-hero .kicker {font-size:.69rem;letter-spacing:.14em;font-weight:800;color:#86f4de;}
+    .td-hero .headline {font-size:1.34rem;font-weight:800;letter-spacing:-.03em;margin:.24rem 0;}
+    .td-hero .sub {font-size:.86rem;color:#c4dedf;line-height:1.55;max-width:780px;}
+    .td-release {font-size:.7rem;color:var(--td-muted);letter-spacing:.04em;}
+    .td-section-kicker {font-size:.70rem;font-weight:800;color:var(--td-teal);letter-spacing:.14em;margin:.6rem 0 0;}
+    .td-risk-banner {
+      border-left:4px solid #eb726b;border-radius:10px;padding:.8rem 1rem;
+      margin:.7rem 0 1rem;background:#fff2ee;color:#7b3937;font-size:.92rem;
+    }
+    .td-action-label {font-size:.70rem;font-weight:850;letter-spacing:.11em;margin-bottom:.3rem;}
+    .td-signal-band {
+      background:linear-gradient(90deg,#e2f4ef,#edf2fb);
+      border:1px solid #d7e8e6;border-radius:14px;
+      padding:.85rem 1.1rem;margin:.45rem 0 .95rem;color:#174b5a;
+    }
+    .stApp [data-testid="stCaptionContainer"] {color:#627b8b;}
+    @media(max-width:760px){
+      .stApp .block-container {padding:1rem .65rem 2rem;}
+      .stApp h1 {font-size:1.83rem;line-height:1.08;}
+      .stApp h2 {font-size:1.45rem;}
+      .stApp h3 {font-size:1.18rem;}
+      .stApp [data-testid="stMetric"] {min-height:94px;padding:.7rem .75rem;}
+      .stApp [data-testid="stMetricValue"] {font-size:1.33rem;}
+      .td-hero {border-radius:16px;padding:1rem .95rem;}
+      .td-hero .headline {font-size:1.14rem;}
+      .td-hero .sub {font-size:.77rem;}
+    }
     </style>""", unsafe_allow_html=True)
 
 
@@ -282,6 +350,11 @@ def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -
     st.caption(f"{label} · macro {macro.get('status','MISSING')} · prezzi validi {valid}/{len(filtered)} · ingressi validati 0")
     with st.expander('Dettagli del contesto macro'):
         st.write(str(macro.get('reason','Fonti macro mancanti.')))
+    st.markdown(
+        '<div class="td-signal-band"><b>Segnali operativi</b> · '
+        'il ranking alimenta Fineco ed eToro, ma non autorizza acquisti o vendite. '
+        'La qualità delle fonti è parte della decisione.</div>',unsafe_allow_html=True,
+    )
     st.subheader("Top 10 Multi-Asset Opportunities")
     st.caption("Candidati di ricerca, non acquisti validati. La posizione tecnica nel gruppo non misura il rendimento atteso.")
     ranked=_ranked(data,score)
@@ -297,6 +370,26 @@ def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -
         st.info("Nessuna opportunità supera questi filtri e i controlli. Nessun valore neutrale sostituisce i fattori mancanti.")
     else:
         _ranking_table(top,"top_opportunities")
+        chart_top=top.head(8).sort_values("technical_score",ascending=True)
+        if not chart_top.empty and chart_top.technical_score.notna().any():
+            colors=chart_top.asset_class.map({
+                "Azioni":"#0c8d87","Obbligazioni":"#6b87bd",
+                "Commodities":"#c49343","Forex":"#8b79b3",
+            }).fillna("#8296ab")
+            bar=go.Figure(go.Bar(
+                x=chart_top.technical_score,y=chart_top.symbol,
+                orientation="h",marker_color=colors,
+                customdata=chart_top[["asset_class","risk_category"]],
+                hovertemplate="%{y} · %{customdata[0]} · score %{x:.1f}/100"
+                              "<br>Rischio: %{customdata[1]}<extra></extra>",
+            ))
+            bar.update_layout(
+                title="Intensità tecnica dei leader selezionati (non rendimento atteso)",
+                xaxis=dict(range=[0,105],title="Technical score",gridcolor="#e6edf3"),
+                yaxis=dict(title=""),height=300,
+                margin=dict(l=5,r=20,t=45,b=25),
+            )
+            _plot(bar,"overview_technical_signal_bars",height=300)
     with st.expander("Come leggere il ranking e i quattro stati"):
         st.write("Technical Score: media pesata dei quattro indici di momentum, con pesi diversi per asset class e orizzonte. Opportunity Score: 100 × (rango medio entro classe − 1)/(numero peer − 1), con almeno tre peer validi. Pesi non ottimizzati retrospettivamente e non calibrati sui rendimenti futuri. A parità di percentile, ordine deterministico per asset class e ticker.")
         st.write("RESEARCH CANDIDATE: Technical Score ≥60 e conferma tecnica ≥50. WATCHLIST: dati sufficienti, condizioni tecniche ancora deboli. BLOCKED: dati essenziali non validi, benchmark non negoziabile o meno di tre peer. ENTRY CANDIDATE: riservato a un modello di ingresso validato; attualmente nessuno. Un gate Core aperto non valida questo modello.")
@@ -467,12 +560,28 @@ def main() -> None:
         st.session_state["workspace"] = "Fineco · Piano operativo"
         del st.query_params["fineco"]
     _styles()
-    st.title("Opportunità multi-asset")
-    st.caption("Ricerca e confronto · dati di fine seduta · Release " + APP_RELEASE)
-    st.button(
-        "Apri Fineco · Piano operativo", type="primary", key="fineco_primary_navigation",
-        on_click=lambda: st.session_state.update({"workspace":"Fineco · Piano operativo"}),
+    st.title("Trading Desk")
+    st.markdown(
+        '<div class="td-hero"><div class="kicker">MULTI-ASSET INTELLIGENCE / RESEARCH ONLY</div>'
+        '<div class="headline">Dai segnali del mercato alle decisioni sul portafoglio</div>'
+        '<div class="sub">Radar quantitativo, allocazione Fineco e gestione del rischio eToro. '
+        'Due capitali distinti, nessun ordine automatico.</div></div>',
+        unsafe_allow_html=True,
     )
+    st.caption("Dati di fine seduta · Release " + APP_RELEASE)
+    nav_fineco,nav_etoro = st.columns(2)
+    with nav_fineco:
+        st.button(
+            "Fineco · Piano operativo", type="primary", key="fineco_primary_navigation",
+            on_click=lambda: st.session_state.update({"workspace":"Fineco · Piano operativo"}),
+            use_container_width=True,
+        )
+    with nav_etoro:
+        st.button(
+            "eToro · Rischio e azioni", type="secondary", key="etoro_primary_navigation",
+            on_click=lambda: st.session_state.update({"workspace":"eToro · Piano operativo"}),
+            use_container_width=True,
+        )
     with st.spinner("Lettura degli snapshot locali…"):
         try:
             data = _load(str(PROJECT_ROOT))
@@ -578,6 +687,8 @@ def main() -> None:
         _overview(data, filtered, score, ret)
     elif view == "Fineco · Piano operativo":
         fineco_workspace(data)
+    elif view == "eToro · Piano operativo":
+        etoro_workspace(data)
     elif view == "Asset explorer":
         _explorer(data, filtered)
     elif view == "Capital flows":
