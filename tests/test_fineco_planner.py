@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from src.intelligence.fineco_planner import (
-    FINECO_POSITIONS, BUY_SET, MAX_SNAPSHOT_AGE_HOURS, build_fineco_plan,
+    FINECO_POSITIONS, BUY_SET, MAX_SNAPSHOT_AGE_HOURS, build_fineco_plan, dashboard_from_public_brief,
 )
 
 NOW = datetime(2026, 11, 8, 13, tzinfo=timezone.utc)
@@ -128,3 +128,47 @@ def test_negative_nan_unknown_and_broker_fields_are_not_accepted_or_exposed():
     p=build_fineco_plan(research_data(),available_cash_eur=1000,
                         cash_confirmed=True,holdings=positions(),holdings_confirmed=True,now=NOW)
     assert "PRIVATE" not in str(p) and "99999" not in str(p)
+
+
+def test_research_data_branch_contract_can_drive_same_pure_planner():
+    local=research_data()
+    brief={
+        "schema_version":"research-brief.v1",
+        "mode":"RESEARCH_ONLY",
+        "publication_status":"QUALIFIED_RESEARCH",
+        "model_version":"technical-priority-v1",
+        "generated_at":(NOW-timedelta(minutes=30)).isoformat(),
+        "completed_run_at":(NOW-timedelta(hours=1)).isoformat(),
+        "quality":{"valid_ratio":.9379,"macro_status":"MISSING"},
+        "horizons":{}
+    }
+    for horizon in ("3m","12m"):
+        brief["horizons"][horizon]={"fineco_proxies":local["opportunities"][horizon].to_dict("records")}
+    remote=dashboard_from_public_brief(brief,now=NOW)
+    assert remote["source_kind"]=="qualified-public-export"
+    assert remote["quality"]["valid_ratio"]==.9379
+    plan=build_fineco_plan(remote,available_cash_eur=1000,cash_confirmed=True,
+                          holdings=positions(),holdings_confirmed=True,now=NOW)
+    assert plan["plan_ready"] and plan["suggested_eur"]==800
+    assert plan["signals"]["commodities_3m"]["state"]=="FAVOREVOLE"
+    assert all("private" not in str(v).lower() for v in remote.values())
+
+
+@pytest.mark.parametrize("change",["stale","missing_proxies","bad_model","poor_quality","future"])
+def test_public_export_rejected_without_qualified_fresh_proxies(change):
+    local=research_data()
+    brief={
+        "schema_version":"research-brief.v1","mode":"RESEARCH_ONLY",
+        "publication_status":"QUALIFIED_RESEARCH","model_version":"technical-priority-v1",
+        "generated_at":(NOW-timedelta(minutes=10)).isoformat(),
+        "completed_run_at":(NOW-timedelta(hours=1)).isoformat(),
+        "quality":{"valid_ratio":.9,"macro_status":"MISSING"},
+        "horizons":{h:{"fineco_proxies":local["opportunities"][h].to_dict("records")} for h in ("3m","12m")}
+    }
+    if change=="stale":brief["generated_at"]=(NOW-timedelta(days=4)).isoformat();brief["completed_run_at"]=(NOW-timedelta(days=4,minutes=5)).isoformat()
+    if change=="missing_proxies":brief["horizons"]["3m"].pop("fineco_proxies")
+    if change=="bad_model":brief["model_version"]="unvalidated-v99"
+    if change=="poor_quality":brief["quality"]["valid_ratio"]=.3
+    if change=="future":brief["generated_at"]=(NOW+timedelta(minutes=1)).isoformat()
+    with pytest.raises((ValueError,TypeError)):
+        dashboard_from_public_brief(brief,now=NOW)
