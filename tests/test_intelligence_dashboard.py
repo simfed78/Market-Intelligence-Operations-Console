@@ -144,3 +144,12 @@ def test_fineco_workspace_default_is_private_and_no_unfunded_orders(monkeypatch,
     assert not any("612.56" in str(m.value) for m in app.markdown)
     assert any("Budget investibile non confermato" in w.value for w in app.warning)
     assert any("Commodities" in m.value for m in app.markdown)
+
+
+def test_fineco_primary_navigation_and_release_are_visible(monkeypatch,dashboard_model):
+    app=launch(monkeypatch,dashboard_model);check(app)
+    assert any(ui.APP_RELEASE in x.value for x in app.caption)
+    button=next(b for b in app.button if b.label=="Apri Fineco · Piano operativo")
+    button.click().run();check(app)
+    assert app.radio[0].value=="Fineco · Piano operativo"
+    assert {x for x in app.dataframe[0].value["ETF/ETC"]}=={"VALL","PRAB","SGLN"}
