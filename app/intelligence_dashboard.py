@@ -462,6 +462,10 @@ def _quality(data: dict, filtered: pd.DataFrame) -> None:
 
 def main() -> None:
     st.set_page_config(page_title="Trading Desk · Multi-Asset Intelligence", page_icon="◈", layout="wide")
+    # One-time deep link: a direct phone URL opens Fineco without a sidebar.
+    if st.query_params.get("fineco") == "1":
+        st.session_state["workspace"] = "Fineco · Piano operativo"
+        del st.query_params["fineco"]
     _styles()
     st.title("Opportunità multi-asset")
     st.caption("Ricerca e confronto · dati di fine seduta · Release " + APP_RELEASE)
