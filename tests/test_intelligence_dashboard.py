@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
 from app import intelligence_dashboard as ui
+from app import fineco_workspace as fineco_ui
 from src.intelligence.opportunities import rank_opportunities,HORIZONS
 
 class MemoryStore:
@@ -37,6 +38,7 @@ def launch(monkeypatch,model):
     ui._load.clear();MemoryStore.shortlist=[]
     monkeypatch.setattr(ui,'load_dashboard',lambda root:deepcopy(model))
     monkeypatch.setattr(ui,'Store',MemoryStore)
+    monkeypatch.setattr(fineco_ui,'_published_research',lambda:None)
     return AppTest.from_string('from app.intelligence_dashboard import main\nmain()',default_timeout=25).run()
 
 
