@@ -67,3 +67,13 @@ Hosted correction: 82 tests passed; mobile AppTest exposes 10 cards and zero mac
 - [x] Add pure offline tests, AppTest check and CI validation workflow.
 - [ ] Review PR test output and merge only after code checks succeed.
 - [ ] Verify live hosted dashboard deploy, UI and input privacy on iPhone.
+
+## Phase 2B.4 — eToro and dashboard visual refresh
+- [x] Add independent read-only eToro REAL workspace and separate Fineco capital.
+- [x] Support session-only user snapshot upload; never expose API credentials or broker data to public exports.
+- [x] Add validated concentration/stress model and SPX500 reduction scenario.
+- [x] Modernize color, navigation, responsive metrics and market-signal visualizations.
+- [x] Add asset-allocation, stress, prioritized actions and per-broker signal cards.
+- [x] Add synthetic tests and CI integration.
+- [ ] Observe green CI, review and merge main-branch PR.
+- [ ] Verify new public Streamlit release in Safari/iPhone and test a real private snapshot import.
