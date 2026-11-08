@@ -5,6 +5,8 @@ import pytest
 from streamlit.testing.v1 import AppTest
 from app import intelligence_dashboard as ui
 from app import fineco_workspace as fineco_ui
+from app import etoro_workspace as etoro_ui
+from src.intelligence.etoro_planner import parse_private_snapshot
 from src.intelligence.opportunities import rank_opportunities,HORIZONS
 
 class MemoryStore:
@@ -39,6 +41,8 @@ def launch(monkeypatch,model):
     monkeypatch.setattr(ui,'load_dashboard',lambda root:deepcopy(model))
     monkeypatch.setattr(ui,'Store',MemoryStore)
     monkeypatch.setattr(fineco_ui,'_published_research',lambda:None)
+    monkeypatch.setattr(etoro_ui,'_read_private_upload',lambda:None)
+    monkeypatch.setattr(etoro_ui,'_published_research',lambda:None)
     return AppTest.from_string('from app.intelligence_dashboard import main\nmain()',default_timeout=25).run()
 
 
@@ -149,7 +153,53 @@ def test_fineco_workspace_default_is_private_and_no_unfunded_orders(monkeypatch,
 def test_fineco_primary_navigation_and_release_are_visible(monkeypatch,dashboard_model):
     app=launch(monkeypatch,dashboard_model);check(app)
     assert any(ui.APP_RELEASE in x.value for x in app.caption)
-    button=next(b for b in app.button if b.label=="Apri Fineco · Piano operativo")
+    button=next(b for b in app.button if b.label=="Fineco · Piano operativo")
     button.click().run();check(app)
     assert app.radio[0].value=="Fineco · Piano operativo"
     assert {x for x in app.dataframe[0].value["ETF/ETC"]}=={"VALL","PRAB","SGLN"}
+
+
+def test_etoro_navigation_and_empty_state_never_invents_balance(monkeypatch,dashboard_model):
+    app=launch(monkeypatch,dashboard_model);check(app)
+    assert any("2B.4-RISK" in x.value for x in app.caption)
+    button=next(x for x in app.button if x.label=="eToro · Rischio e azioni")
+    button.click().run();check(app)
+    assert app.radio[0].value=="eToro · Piano operativo"
+    assert any("Nessun account caricato" in x.value for x in app.info)
+    assert not app.metric
+    assert not app.get("plotly_chart")
+
+
+def test_etoro_uploaded_fixture_has_two_real_charts_and_no_trade_buttons(monkeypatch,dashboard_model):
+    from datetime import datetime,timezone
+    test_now=datetime.now(timezone.utc).isoformat()
+    fixture={
+        "schema_version":"etoro-private-snapshot.v1","account":"real","currency":"USD",
+        "as_of":test_now,
+        "totals":{"equity":6000,"available_cash":60,"used_margin":3000,
+                  "unrealized_pnl":-1000},
+        "holdings":[
+            {"symbol":"SPX500","value":200,"exposure":-6000,"pnl":-1000,
+             "leverage":20,"position_count":1},
+            {"symbol":"BOND","value":2000,"exposure":2000,"pnl":-20,
+             "leverage":1,"position_count":10},
+        ],
+        "positions":[{"position_id":1,"symbol":"SPX500","direction":"short",
+                      "units":1,"current_rate":6000,"leverage":20,
+                      "pnl":-1000,"stop_loss":6600}],
+        "pending_orders_count":0,
+    }
+    original=etoro_ui._read_private_upload
+    monkeypatch.setattr(etoro_ui,'_read_private_upload',
+                        lambda:parse_private_snapshot(fixture))
+    app=launch(monkeypatch,dashboard_model)
+    # launch deliberately resets upload to None; explicitly set patched fixture
+    monkeypatch.setattr(etoro_ui,'_read_private_upload',
+                        lambda:parse_private_snapshot(fixture))
+    app.radio[0].set_value("eToro · Piano operativo").run();check(app)
+    assert len(app.get("plotly_chart"))==2
+    assert any("Short SPX500" in x.label for x in app.metric)
+    assert not any("Invia ordine" in x.label for x in app.button)
+    slider=next(x for x in app.slider if "riduzione" in x.label)
+    slider.set_value(70).run();check(app)
+    assert len(app.get("plotly_chart"))==2
