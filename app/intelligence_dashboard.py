@@ -27,6 +27,7 @@ GREEN = "#1f4f46"
 AMBER = "#ad7529"
 RED = "#ad4b48"
 COLORS = [GREEN, "#758eab", AMBER, "#8d76a2", "#73a198", RED, "#7d8165"]
+APP_RELEASE = "2B.3-FINECO-2026-11-08"
 VIEWS = ["Overview", "Fineco · Piano operativo", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
 HORIZONS = {"1 mese": ("momentum_1m", "ret_21"), "3 mesi": ("momentum_3m", "ret_63"), "6 mesi": ("momentum_6m", "ret_126"), "12 mesi": ("momentum_12m", "ret_252")}
 READINESS_ORDER = {"research candidate": 2, "watch": 1, "blocked": 0}
@@ -274,10 +275,6 @@ def _ranking_table(frame: pd.DataFrame, key: str) -> None:
 
 
 def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -> None:
-    st.button(
-        "Fineco · Apri il piano operativo", type="primary", key="open_fineco_from_home",
-        on_click=lambda: st.session_state.update({"workspace":"Fineco · Piano operativo"}),
-    )
     st.subheader("Global Macro & Risk Regime")
     macro=data.get("macro",{}) or {}
     label=str(macro.get("label","Non disponibile"))
@@ -467,7 +464,11 @@ def main() -> None:
     st.set_page_config(page_title="Trading Desk · Multi-Asset Intelligence", page_icon="◈", layout="wide")
     _styles()
     st.title("Opportunità multi-asset")
-    st.caption("Ricerca e confronto · dati di fine seduta")
+    st.caption("Ricerca e confronto · dati di fine seduta · Release " + APP_RELEASE)
+    st.button(
+        "Apri Fineco · Piano operativo", type="primary", key="fineco_primary_navigation",
+        on_click=lambda: st.session_state.update({"workspace":"Fineco · Piano operativo"}),
+    )
     with st.spinner("Lettura degli snapshot locali…"):
         try:
             data = _load(str(PROJECT_ROOT))
