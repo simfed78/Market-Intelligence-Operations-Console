@@ -47,3 +47,14 @@ Yahoo is a single indicative research source, not an execution feed. Adjusted cl
 - [x] Regression tests and publish fix to existing Streamlit branch.
 
 Hosted correction: 82 tests passed; mobile AppTest exposes 10 cards and zero macro metric cards. Server source availability must be checked from new diagnostics; no claim of 145 recovered sources.
+
+## Phase 2B.2 — source-backed scheduled report integration
+- [x] Discover and preserve existing GitHub/Streamlit source and ranking model.
+- [x] Add research-only derived JSON contract and fail-closed freshness/coverage gates.
+- [x] Add deterministic, security, stale-data and no-leak regression tests.
+- [x] Add GitHub Actions PR validation plus weekday source refresh and separate data-branch publication.
+- [x] Document weekly report consumer policy and strict Fineco/eToro data separation.
+- [ ] Observe a successful PR CI run and review source/network errors.
+- [ ] Merge approved PR and verify the first publication to research-data branch.
+- [ ] Read the actual published JSON through the Monday-report GitHub connection.
+- [ ] Verify live Streamlit remains working and compare run timestamps/coverage.
