@@ -12,6 +12,8 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src.intelligence.etoro_planner import analyze_etoro, parse_private_snapshot
+from src.intelligence.fineco_planner import _validated_signal
+from app.fineco_workspace import _published_research
 
 DARK="#15283b"
 TEAL="#087f7c"
@@ -273,6 +275,28 @@ def etoro_workspace(data: dict) -> None:
     st.caption(
         "Ordini pendenti nello snapshot: "+str(result["pending_orders_count"])+
         " · Nessun ordine può essere inviato da questa dashboard."
+    )
+    st.markdown("### Radar multi-asset · contesto della settimana")
+    published=_published_research()
+    public_data=published if published is not None else data
+    ranked=(public_data.get("opportunities") or {}).get("3m")
+    context=[
+        ("Azionario globale",("VT","ACWI")),
+        ("Oro",("GLD","IAU")),
+        ("Commodities",("USO","DBC")),
+    ]
+    cards=st.columns(3)
+    for col,(label,symbols) in zip(cards,context):
+        signal=_validated_signal(ranked,symbols)
+        with col:
+            with st.container(border=True):
+                st.caption(label+" · trend 3 mesi")
+                st.markdown("**"+signal["state"]+"**")
+                st.caption(signal["reason"])
+    st.caption(
+        "Il radar classifica proxy quotati USA: serve per contestualizzare "
+        "le esposizioni, non autorizza l'apertura di CFD o posizioni a leva. "
+        "Il rischio di portafoglio prevale sempre sul ranking."
     )
     with st.expander("Metodologia e limiti"):
         for item in result["limitations"]:
