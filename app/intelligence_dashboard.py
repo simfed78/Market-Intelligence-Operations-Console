@@ -274,6 +274,10 @@ def _ranking_table(frame: pd.DataFrame, key: str) -> None:
 
 
 def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -> None:
+    st.button(
+        "Fineco · Apri il piano operativo", type="primary", key="open_fineco_from_home",
+        on_click=lambda: st.session_state.update({"workspace":"Fineco · Piano operativo"}),
+    )
     st.subheader("Global Macro & Risk Regime")
     macro=data.get("macro",{}) or {}
     label=str(macro.get("label","Non disponibile"))
