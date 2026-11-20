@@ -36,14 +36,16 @@ def dashboard_model():
         macro=dict(status='MISSING',label='Non disponibile',reason='Declared missing source',observations=pd.DataFrame()),core=dict(mode='RESEARCH_ONLY',phase1_gate='OPEN',phase2_gate='BLOCKED',market_performance_computed=False,demo=dict(mode='DEMO_READ_ONLY')),latest_run=dict(run_at='2026-11-07T08:00:00Z'),errors=[])
 
 
-def launch(monkeypatch,model):
+def launch(monkeypatch,model,*,cards=False):
     ui._load.clear();MemoryStore.shortlist=[]
     monkeypatch.setattr(ui,'load_dashboard',lambda root:deepcopy(model))
     monkeypatch.setattr(ui,'Store',MemoryStore)
     monkeypatch.setattr(fineco_ui,'_published_research',lambda:None)
     monkeypatch.setattr(etoro_ui,'_read_private_upload',lambda:None)
     monkeypatch.setattr(etoro_ui,'_published_research',lambda:None)
-    return AppTest.from_string('from app.intelligence_dashboard import main\nmain()',default_timeout=25).run()
+    app=AppTest.from_string('from app.intelligence_dashboard import main\nmain()',default_timeout=25)
+    app.session_state['top_opportunities_compact']=cards
+    return app.run()
 
 
 def check(app):assert not app.exception,[e.message for e in app.exception]
@@ -127,8 +129,8 @@ def test_hosted_cold_start_shows_progress_not_false_outage(monkeypatch,dashboard
 
 
 def test_mobile_compact_cards_put_action_near_ticker(monkeypatch,dashboard_model):
-    monkeypatch.setattr(ui,'_compact_default',lambda:True)
-    app=launch(monkeypatch,dashboard_model);check(app)
+    assert ui._compact_default() is True
+    app=launch(monkeypatch,dashboard_model,cards=True);check(app)
     assert not app.metric  # no four full-width macro cards above the opportunities
     assert next(c for c in app.checkbox if c.label=='Vista compatta').value
     buttons=[b for b in app.button if b.label=='Apri scheda']
@@ -161,7 +163,7 @@ def test_fineco_primary_navigation_and_release_are_visible(monkeypatch,dashboard
 
 def test_etoro_navigation_and_empty_state_never_invents_balance(monkeypatch,dashboard_model):
     app=launch(monkeypatch,dashboard_model);check(app)
-    assert any("2B.4-RISK" in x.value for x in app.caption)
+    assert any(ui.APP_RELEASE in x.value for x in app.caption)
     button=next(x for x in app.button if x.label=="eToro · Rischio e azioni")
     button.click().run();check(app)
     assert app.radio[0].value=="eToro · Piano operativo"
@@ -203,3 +205,16 @@ def test_etoro_uploaded_fixture_has_two_real_charts_and_no_trade_buttons(monkeyp
     slider=next(x for x in app.slider if "riduzione" in x.label)
     slider.set_value(70).run();check(app)
     assert len(app.get("plotly_chart"))==2
+
+
+def test_decision_cards_explain_data_gaps_and_preserve_ranking(monkeypatch,dashboard_model):
+    app=launch(monkeypatch,dashboard_model,cards=True);check(app)
+    messages=' '.join(x.value for x in app.markdown)+ ' '.join(x.value for x in app.caption)
+    assert 'Interessante perché' in messages and 'Da considerare se' in messages
+    assert 'Tesi da riesaminare se' in messages
+    assert 'MISSING' in messages and 'Fonte:' in messages and 'Ingresso non validato' in messages
+    assert 'FAKE' not in messages
+    first=[b for b in app.button if b.label=='Apri scheda'][0].key
+    next(c for c in app.checkbox if c.label=='Vista compatta').uncheck().run();check(app)
+    assert app.dataframe[0].value.opportunity_score.is_monotonic_decreasing
+    assert app.dataframe[0].value.iloc[0].symbol in first

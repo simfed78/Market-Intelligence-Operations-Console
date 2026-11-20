@@ -21,6 +21,7 @@ from src.intelligence.service import load_dashboard
 from src.intelligence.store import Store
 from src.intelligence.hosted import start_public_refresh, public_status
 from src.intelligence.opportunities import rank_opportunities, top10, MODEL_VERSION, WEIGHTS
+from src.intelligence.decision_cards import decision_summary
 from app.fineco_workspace import fineco_workspace
 from app.etoro_workspace import etoro_workspace
 
@@ -28,7 +29,7 @@ GREEN = "#1f4f46"
 AMBER = "#ad7529"
 RED = "#ad4b48"
 COLORS = [GREEN, "#758eab", AMBER, "#8d76a2", "#73a198", RED, "#7d8165"]
-APP_RELEASE = "2B.4-RISK-2026-11-08"
+APP_RELEASE = "2B.5-CARDS-2026-11-20"
 VIEWS = ["Overview", "Fineco · Piano operativo", "eToro · Piano operativo", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
 HORIZONS = {"1 mese": ("momentum_1m", "ret_21"), "3 mesi": ("momentum_3m", "ret_63"), "6 mesi": ("momentum_6m", "ret_126"), "12 mesi": ("momentum_12m", "ret_252")}
 READINESS_ORDER = {"research candidate": 2, "watch": 1, "blocked": 0}
@@ -269,26 +270,61 @@ def _ranked(data: dict, score: str) -> pd.DataFrame:
 
 
 def _compact_default() -> bool:
-    try:
-        agent=st.context.headers.get('User-Agent','').lower()
-        return 'iphone' in agent or 'android' in agent
-    except (AttributeError,RuntimeError,KeyError):return False
+    return True
 
 
-def _opportunity_cards(frame: pd.DataFrame, key: str) -> None:
-    for row in frame.to_dict('records'):
-        with st.container(border=True):
-            st.markdown(f"**{row['priority']}. {row['symbol']}** · {row.get('subcategory',row.get('asset_class',''))}")
-            st.caption(str(row.get('name','')))
-            action='Da approfondire' if row.get('signal_state')=='RESEARCH CANDIDATE' else 'Attendere conferma'
-            st.write(f"{action} · {row.get('horizon','')} · rischio volatilità {row.get('risk_category','—')}")
-            price=_finite(row.get('price'));ma=_finite(row.get('sma50'))
-            if price is not None:
-                st.caption(f"Chiusura {price:,.2f} {row.get('currency','')} · seduta {row.get('observed_at','—')}")
-            if price is not None and ma is not None:
-                st.write(f"{'Sopra' if price>ma else 'Sotto'} la media a 50 sedute ({ma:,.2f}).")
-            st.caption(str(row.get('rationale','')))
-            st.button('Apri scheda',key=f"{key}_card_{row['symbol']}",on_click=_open_asset,args=(row['symbol'],))
+def _opportunity_cards(frame: pd.DataFrame, key: str, histories=None) -> None:
+    histories = histories or {}
+    records = frame.to_dict('records')
+    for offset in range(0, len(records), 3):
+        columns = st.columns(3)
+        for column, row in zip(columns, records[offset:offset+3]):
+            with column, st.container(border=True):
+                details = decision_summary(row)
+                st.markdown(f"**{row['priority']}. {row['symbol']}**")
+                st.caption(str(row.get('name', '')))
+                st.caption(f"{row.get('asset_class', '—')} · {row.get('subcategory', '—')} · {row.get('region', '—')}")
+                price = _finite(row.get('price'))
+                st.markdown(f"**{price:,.2f} {row.get('currency', '')}**" if price is not None and row.get('price_status') == 'VALID' else '**Prezzo non disponibile**')
+                history = _history(histories, row['symbol'])
+                if row.get('price_status') == 'VALID' and not history.empty and 'adj_close' in history:
+                    series = pd.to_numeric(history.adj_close.tail(60), errors='coerce')
+                    if len(series) > 1 and series.notna().all() and np.isfinite(series).all() and (series > 0).all():
+                        color = GREEN if series.iloc[-1] >= series.iloc[0] else RED
+                        spark = go.Figure(go.Scatter(x=history.date.tail(60), y=series, mode='lines', line=dict(color=color, width=2), hovertemplate='%{x|%d/%m/%Y} · %{y:.2f}<extra></extra>'))
+                        spark.update_layout(height=85, margin=dict(l=0,r=0,t=4,b=4), xaxis=dict(visible=False), yaxis=dict(visible=False), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                        st.plotly_chart(spark, width='stretch', key=f"{key}_spark_{row['symbol']}", config={'displayModeBar':False})
+                        st.caption('Ultime 60 sedute · prezzo rettificato')
+                state = str(row.get('signal_state', 'BLOCKED'))
+                action = 'Da approfondire' if state == 'RESEARCH CANDIDATE' else 'Attendere conferma' if state == 'WATCHLIST' else 'Verificare lo stato del segnale'
+                st.markdown(f"**{action}** · {state}")
+                st.write(f"Trend: {details['trend']} · Momentum: {details['momentum']}")
+                if details['extension'] is not None:
+                    st.caption(f"Distanza dalla SMA50: {details['extension']:+.1f}% · nessuna classificazione automatica di ipervenduto")
+                tech = _finite(row.get('technical_score'))
+                percentile = _finite(row.get('opportunity_score'))
+                st.write(f"Technical Score {tech:.1f}/100" if tech is not None else 'Technical Score MISSING')
+                if percentile is not None:
+                    st.caption(f"Priorità entro classe {percentile:.1f}/100 · {row.get('peer_count', '—')} peer; non rendimento atteso")
+                st.caption(f"Orizzonte {row.get('horizon', '—')} · Rischio volatilità {row.get('risk_category', '—')}")
+                delta = _finite(row.get('rank_change'))
+                st.caption(f"Δ ranking globale {delta:+.0f}" if delta is not None else 'Δ ranking globale non confrontabile')
+                st.markdown('**Interessante perché…**')
+                st.write(str(row.get('rationale', 'Spiegazione non disponibile')))
+                st.caption(details['volume'])
+                if row.get('early_opportunity') is True:
+                    st.caption('Early Opportunity · classificazione sperimentale, capacità predittiva non validata')
+                with st.expander('Conferme, rischi e fonti'):
+                    st.markdown('**Da considerare se…**')
+                    st.write(details['confirmation'])
+                    st.markdown('**Tesi da riesaminare se…**')
+                    st.write(details['invalidation'])
+                    st.caption('Momentum: rendimento 1m rispetto al rendimento medio mensile composto degli ultimi 3m. Trend: prezzo rispetto a SMA50 e SMA200.')
+                    st.write(f"Qualità prezzi: {row.get('price_status', 'MISSING')} · volumi: {row.get('volume_status', 'MISSING')} · Data confidence: {row.get('data_confidence', 'MISSING')}")
+                    st.caption(f"Fonte: {row.get('source', 'MISSING')} · Seduta: {row.get('observed_at', '—')} · Disponibilità: {row.get('available_at', '—')} · Acquisizione: {row.get('updated_at', row.get('retrieved_at', '—'))}")
+                    st.caption('Fattori inclusi: ' + str(row.get('included_factors', 'MISSING')))
+                    st.caption('Macro Alignment, Relative Value e Capital Flow Score: MISSING. Nessun valore neutrale imputato. Ingresso non validato.')
+                st.button('Apri scheda', key=f"{key}_card_{row['symbol']}", on_click=_open_asset, args=(row['symbol'],))
 
 
 @st.fragment(run_every='3s')
@@ -311,10 +347,10 @@ def _refresh_notice() -> None:
             st.caption(f"Aggiornamento concluso: {result.get('acquired',0)} fonti scaricate, {result.get('cached',0)} in cache, {len(errors)} non aggiornate. Dettagli nel menu Data quality.")
 
 
-def _ranking_table(frame: pd.DataFrame, key: str) -> None:
-    compact=st.checkbox('Vista compatta',value=_compact_default(),key=key+'_compact')
+def _ranking_table(frame: pd.DataFrame, key: str, histories=None) -> None:
+    compact=st.checkbox('Vista compatta',value=_compact_default(),key=key+'_compact',help='Schede decisionali responsive; disattiva per la tabella ordinabile.')
     if compact:
-        _opportunity_cards(frame,key)
+        _opportunity_cards(frame,key,histories)
         return
     columns=["priority","symbol","name","asset_class","subcategory","opportunity_score","rank_change",
              "ret_21","ret_63","ret_126","ret_252","volume_signal","risk_category","horizon","signal_state","rationale","observed_at","updated_at"]
@@ -369,7 +405,7 @@ def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -
     if top.empty:
         st.info("Nessuna opportunità supera questi filtri e i controlli. Nessun valore neutrale sostituisce i fattori mancanti.")
     else:
-        _ranking_table(top,"top_opportunities")
+        _ranking_table(top,"top_opportunities",data.get("histories",{}))
         chart_top=top.head(8).sort_values("technical_score",ascending=True)
         if not chart_top.empty and chart_top.technical_score.notna().any():
             colors=chart_top.asset_class.map({
