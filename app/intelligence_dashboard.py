@@ -62,9 +62,9 @@ def _number(value, pct: bool = False) -> str:
 
 def _styles() -> None:
     st.markdown("""<style>
-    :root {--td-ink:#162a3d;--td-muted:#66798d;--td-teal:#087f7c;--td-violet:#6556ab;--td-line:#e2e9f1;}
+    :root {--td-ink:#e6edf5;--td-muted:#9badc1;--td-teal:#46d3c4;--td-violet:#a99af5;--td-line:#26384c;}
     .stApp [data-testid="stAppViewContainer"] {
-      background:radial-gradient(circle at 92% 2%,#e9f5f4 0,#f5f8fc 29%,#f5f8fc 100%);
+      background:radial-gradient(circle at 92% 2%,#102d37 0,#080f19 34%,#080f19 100%);
       color:var(--td-ink);
     }
     .stApp .block-container {padding-top:1.35rem;padding-bottom:3.2rem;max-width:1460px;}
@@ -73,25 +73,25 @@ def _styles() -> None:
     .stApp h2 {font-size:1.8rem;}
     .stApp h3 {font-size:1.35rem;}
     .stApp [data-testid="stSidebar"] {
-      background:linear-gradient(175deg,#eaf3f4,#f1f5fa 72%);
-      border-right:1px solid #dce6ed;
+      background:linear-gradient(175deg,#122b35,#101827 72%);
+      border-right:1px solid #293b50;
     }
     .stApp [data-testid="stSidebar"] [role="radiogroup"] label {
       padding:.20rem .45rem;border-radius:10px;transition:background .18s ease;
     }
-    .stApp [data-testid="stSidebar"] [role="radiogroup"] label:hover {background:#dcebe9;}
+    .stApp [data-testid="stSidebar"] [role="radiogroup"] label:hover {background:#263c4a;}
     .stApp [data-testid="stMetric"] {
-      border:1px solid #e0e8f0;border-radius:17px;padding:1rem 1.1rem;
-      background:#fff;box-shadow:0 7px 24px rgba(21,48,66,.045);
+      border:1px solid #273b4c;border-radius:17px;padding:1rem 1.1rem;
+      background:#111e2d;box-shadow:0 7px 24px rgba(0,0,0,.20);
       min-height:118px;
     }
     .stApp [data-testid="stMetricLabel"] {color:var(--td-muted);font-size:.84rem;font-weight:650;}
     .stApp [data-testid="stMetricValue"] {color:var(--td-ink);font-weight:750;letter-spacing:-.04em;}
     .stApp [data-testid="stVerticalBlockBorderWrapper"]>div,
     .stApp [data-testid="stExpander"] {
-      border-radius:18px!important;border-color:#dee8ef!important;
+      border-radius:18px!important;border-color:#304153!important;
     }
-    .stApp [data-testid="stDataFrame"] {border-radius:14px;overflow:hidden;border:1px solid #dfe7ed;}
+    .stApp [data-testid="stDataFrame"] {border-radius:14px;overflow:hidden;border:1px solid #304153;}
     .stApp div[data-testid="stButton"] button[kind="primary"] {
       border:0;border-radius:12px;
       background:linear-gradient(120deg,#0a7777,#1769a5);
@@ -116,15 +116,15 @@ def _styles() -> None:
     .td-section-kicker {font-size:.70rem;font-weight:800;color:var(--td-teal);letter-spacing:.14em;margin:.6rem 0 0;}
     .td-risk-banner {
       border-left:4px solid #eb726b;border-radius:10px;padding:.8rem 1rem;
-      margin:.7rem 0 1rem;background:#fff2ee;color:#7b3937;font-size:.92rem;
+      margin:.7rem 0 1rem;background:#392321;color:#ffd6cf;font-size:.92rem;
     }
     .td-action-label {font-size:.70rem;font-weight:850;letter-spacing:.11em;margin-bottom:.3rem;}
     .td-signal-band {
-      background:linear-gradient(90deg,#e2f4ef,#edf2fb);
-      border:1px solid #d7e8e6;border-radius:14px;
-      padding:.85rem 1.1rem;margin:.45rem 0 .95rem;color:#174b5a;
+      background:linear-gradient(90deg,#153c39,#1c2d45);
+      border:1px solid #2b534c;border-radius:14px;
+      padding:.85rem 1.1rem;margin:.45rem 0 .95rem;color:#daf6f2;
     }
-    .stApp [data-testid="stCaptionContainer"] {color:#627b8b;}
+    .stApp [data-testid="stCaptionContainer"] {color:#9badc1;}
     @media(max-width:760px){
       .stApp .block-container {padding:1rem .65rem 2rem;}
       .stApp h1 {font-size:1.83rem;line-height:1.08;}
