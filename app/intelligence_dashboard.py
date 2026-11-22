@@ -24,13 +24,14 @@ from src.intelligence.opportunities import rank_opportunities, top10, MODEL_VERS
 from src.intelligence.decision_cards import decision_summary
 from app.fineco_workspace import fineco_workspace
 from app.etoro_workspace import etoro_workspace
+from app.phase3_cockpit import render_cockpit, render_engine_view
 
 GREEN = "#1f4f46"
 AMBER = "#ad7529"
 RED = "#ad4b48"
 COLORS = [GREEN, "#758eab", AMBER, "#8d76a2", "#73a198", RED, "#7d8165"]
-APP_RELEASE = "2B.5-CARDS-2026-11-20"
-VIEWS = ["Overview", "Fineco · Piano operativo", "eToro · Piano operativo", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
+APP_RELEASE = "3A-COMMITTEE-DEVELOPMENT-2026-11-22"
+VIEWS = ["Overview", "Investment Committee", "Druckenmiller · Macro", "Livermore · Execution", "Burry · Mispricing", "Buffett · Quality", "Fineco · Piano operativo", "eToro · Piano operativo", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
 HORIZONS = {"1 mese": ("momentum_1m", "ret_21"), "3 mesi": ("momentum_3m", "ret_63"), "6 mesi": ("momentum_6m", "ret_126"), "12 mesi": ("momentum_12m", "ret_252")}
 READINESS_ORDER = {"research candidate": 2, "watch": 1, "blocked": 0}
 
@@ -379,6 +380,7 @@ def _ranking_table(frame: pd.DataFrame, key: str, histories=None) -> None:
 
 
 def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -> None:
+    render_cockpit(data, filtered, score.removeprefix("momentum_"))
     st.subheader("Global Macro & Risk Regime")
     macro=data.get("macro",{}) or {}
     label=str(macro.get("label","Non disponibile"))
@@ -728,6 +730,8 @@ def main() -> None:
         fineco_workspace(data)
     elif view == "eToro · Piano operativo":
         etoro_workspace(data)
+    elif view in ("Investment Committee", "Druckenmiller · Macro", "Livermore · Execution", "Burry · Mispricing", "Buffett · Quality"):
+        render_engine_view(view, data, filtered, suffix)
     elif view == "Asset explorer":
         _explorer(data, filtered)
     elif view == "Capital flows":
