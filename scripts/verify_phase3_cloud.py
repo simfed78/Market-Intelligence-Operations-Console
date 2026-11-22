@@ -19,7 +19,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 def verify(page, label):
     last_error = None
     # First production rebuild or wake-up may take longer than a normal page load.
-    for attempt in range(12):
+    for attempt in range(4):
         try:
             page.goto(URL, wait_until="domcontentloaded", timeout=60_000)
             page.get_by_text(RELEASE, exact=False).wait_for(state="visible", timeout=25_000)
@@ -33,9 +33,16 @@ def verify(page, label):
         except Exception as exc:
             last_error = exc
             print(f"{label} attempt {attempt + 1}: {type(exc).__name__}: {exc}", flush=True)
-            if attempt == 11:
+            try:
+                title = page.title()
+                body = page.locator("body").inner_text(timeout=5_000)
+                print(f"{label} diagnostic: title={title!r}; body={body[:1000]!r}", flush=True)
+                page.screenshot(path=str(OUT / f"{label}-failure-{attempt+1}.png"), full_page=True)
+            except Exception as diagnostic_exc:
+                print(f"{label} diagnostic unavailable: {type(diagnostic_exc).__name__}", flush=True)
+            if attempt == 3:
                 raise AssertionError(f"{label}: release marker or decision cockpit not verified") from last_error
-            time.sleep(15)
+            time.sleep(10)
     page.screenshot(path=str(OUT / f"{label}.png"), full_page=True)
     metrics = page.evaluate(
         "() => ({scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth})"
