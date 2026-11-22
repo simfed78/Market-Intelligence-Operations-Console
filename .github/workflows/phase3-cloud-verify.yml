@@ -1,0 +1,42 @@
+name: Phase 3 production desktop/mobile release verification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "src/intelligence/phase3_committee.py"
+      - "streamlit_app.py"
+      - ".streamlit/**"
+      - "scripts/verify_phase3_cloud.py"
+      - ".github/workflows/phase3-cloud-verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-live-cloud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install real browser verification
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Verify published release using Chromium desktop + iPhone-sized viewport
+        env:
+          PHASE3_PUBLIC_URL: https://market-intelligence-operations-console-7ejfn7tyabjcktlo7kdy22.streamlit.app
+        run: python scripts/verify_phase3_cloud.py
+      - name: Save rendered verification screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-public-desktop-mobile
+          path: artifacts/phase3-cloud/*.png
+          if-no-files-found: ignore
+          retention-days: 7
