@@ -3,8 +3,8 @@ headless = true
 runOnSave = true
 
 [theme]
-base = "light"
-primaryColor = "#1f4f46"
-backgroundColor = "#f7f6f1"
-secondaryBackgroundColor = "#e8efe7"
-textColor = "#14221f"
+base = "dark"
+primaryColor = "#33c2b4"
+backgroundColor = "#080f19"
+secondaryBackgroundColor = "#101c2b"
+textColor = "#e6edf5"
