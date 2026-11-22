@@ -25,6 +25,7 @@ from src.intelligence.decision_cards import decision_summary
 from app.fineco_workspace import fineco_workspace
 from app.etoro_workspace import etoro_workspace
 from app.phase3_cockpit import render_cockpit, render_engine_view
+from src.intelligence.phase3_committee import ranked_decisions
 
 GREEN = "#1f4f46"
 AMBER = "#ad7529"
@@ -299,6 +300,7 @@ def _opportunity_cards(frame: pd.DataFrame, key: str, histories=None) -> None:
                 state = str(row.get('signal_state', 'BLOCKED'))
                 action = 'Da approfondire' if state == 'RESEARCH CANDIDATE' else 'Attendere conferma' if state == 'WATCHLIST' else 'Verificare lo stato del segnale'
                 st.markdown(f"**{action}** · {state}")
+                st.caption("Committee: " + str(row.get("committee_action", "NO TRADE")) + " · " + str(row.get("trade_readiness", "DATA UNAVAILABLE")))
                 st.write(f"Trend: {details['trend']} · Momentum: {details['momentum']}")
                 if details['extension'] is not None:
                     st.caption(f"Distanza dalla SMA50: {details['extension']:+.1f}% · nessuna classificazione automatica di ipervenduto")
@@ -353,10 +355,11 @@ def _ranking_table(frame: pd.DataFrame, key: str, histories=None) -> None:
     if compact:
         _opportunity_cards(frame,key,histories)
         return
-    columns=["priority","symbol","name","asset_class","subcategory","opportunity_score","rank_change",
+    columns=["priority","symbol","name","committee_action","trade_readiness","asset_class","subcategory","opportunity_score","rank_change",
              "ret_21","ret_63","ret_126","ret_252","volume_signal","risk_category","horizon","signal_state","rationale","observed_at","updated_at"]
     config={"priority":st.column_config.NumberColumn("Priorità",pinned=True),
             "symbol":st.column_config.TextColumn("Ticker",pinned=True),"name":"Nome completo",
+            "committee_action":"Committee action","trade_readiness":"Trade readiness",
             "asset_class":"Asset class","subcategory":"Sottocategoria",
             "opportunity_score":st.column_config.ProgressColumn("Opportunity · tecnico",min_value=0,max_value=100,format="%.1f"),
             "rank_change":st.column_config.NumberColumn("Δ rank globale",format="%+d"),
@@ -407,6 +410,9 @@ def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -
     if top.empty:
         st.info("Nessuna opportunità supera questi filtri e i controlli. Nessun valore neutrale sostituisce i fattori mancanti.")
     else:
+        committee = {item["symbol"]: item for item in ranked_decisions(top, data.get("macro"), limit=10)}
+        top["committee_action"] = top.symbol.map(lambda symbol: committee[symbol]["action"] if symbol in committee else "NO TRADE")
+        top["trade_readiness"] = top.symbol.map(lambda symbol: committee[symbol]["readiness"] if symbol in committee else "DATA UNAVAILABLE")
         _ranking_table(top,"top_opportunities",data.get("histories",{}))
         chart_top=top.head(8).sort_values("technical_score",ascending=True)
         if not chart_top.empty and chart_top.technical_score.notna().any():
