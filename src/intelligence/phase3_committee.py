@@ -173,7 +173,10 @@ def risk_officer(row, now, portfolio=None):
     if row.get("price_status") != "VALID" or row.get("signal_state") == "BLOCKED":
         blockers.append("Price quality/ranking gate failed")
     retrieved = instant(row.get("retrieved_at") or row.get("updated_at"))
-    observed = instant(str(row.get("observed_at")) + "T00:00:00+00:00") if row.get("observed_at") else None
+    observation = row.get("observed_at")
+    observed = instant(observation)
+    if observed is None and isinstance(observation, str) and len(observation) == 10:
+        observed = instant(observation + "T00:00:00+00:00")
     if not retrieved or not 0 <= (now - retrieved).total_seconds() <= 96 * 3600:
         blockers.append("Missing/stale provider acquisition timestamp")
     if not observed or not 0 <= (now - observed).total_seconds() <= 6 * 86400:
@@ -185,10 +188,13 @@ def risk_officer(row, now, portfolio=None):
     if portfolio is None or not isinstance(portfolio, dict) or not portfolio.get("verified"):
         blockers.append("Verified portfolio and buying-power snapshot unavailable")
     else:
+        snapshot_at = instant(portfolio.get("as_of"))
+        if snapshot_at is None or not 0 <= (now - snapshot_at).total_seconds() <= 72 * 3600:
+            blockers.append("Verified portfolio timestamp missing/stale")
         if portfolio.get("broker_available") is not True:
             blockers.append("Broker eligibility not verified")
-        if portfolio.get("instrument_type") == "CFD":
-            blockers.append("CFD instrument: underlying-asset eligibility not verified")
+        if portfolio.get("instrument_type") not in {"UNDERLYING", "UCITS_ETF", "PHYSICAL_ETC"}:
+            blockers.append("Instrument type not verified as unleveraged underlying (CFD risk)")
         lev = finite(portfolio.get("leverage"))
         if lev is None or lev > 1 or lev < 0:
             blockers.append("Leverage absent or above unlevered limit")
@@ -201,6 +207,8 @@ def risk_officer(row, now, portfolio=None):
             blockers.append("Currency-risk gate unavailable")
         if portfolio.get("liquidity_checked") is not True:
             blockers.append("Instrument liquidity gate unavailable")
+        if portfolio.get("drawdown_budget_ok") is not True:
+            blockers.append("Aggregate drawdown budget not verified")
     if row.get("volume_status") != "VALID":
         warnings.append("Volume is not independently qualified")
     return {"state": "BLOCK" if blockers else "PASS", "blockers": blockers, "warnings": warnings,
