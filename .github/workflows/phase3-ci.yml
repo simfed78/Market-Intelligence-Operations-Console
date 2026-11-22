@@ -1,0 +1,54 @@
+name: Phase 3 decision cockpit validation
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "scripts/**"
+      - "src/**"
+      - "tests/**"
+      - "streamlit_app.py"
+      - "requirements.txt"
+      - ".streamlit/**"
+      - ".github/workflows/phase3-ci.yml"
+      - ".github/workflows/phase3-cloud-verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Install existing project dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile new and legacy sources
+        run: python -m compileall -q app src scripts streamlit_app.py
+      - name: Full regression including Phase 3
+        env:
+          TRADING_DESK_PUBLIC: "1"
+        run: python -m pytest -q
+      - name: Streamlit server startup and health
+        env:
+          TRADING_DESK_PUBLIC: "1"
+        shell: bash
+        run: |
+          python -m streamlit run streamlit_app.py --server.headless true --server.port 8501 > /tmp/phase3_streamlit.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid 2>/dev/null || true' EXIT
+          for attempt in {1..20}; do
+            if curl --fail --silent http://localhost:8501/_stcore/health | grep -q ok; then
+              echo "Streamlit health OK"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/phase3_streamlit.log
+          exit 1

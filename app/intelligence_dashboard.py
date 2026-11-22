@@ -24,13 +24,15 @@ from src.intelligence.opportunities import rank_opportunities, top10, MODEL_VERS
 from src.intelligence.decision_cards import decision_summary
 from app.fineco_workspace import fineco_workspace
 from app.etoro_workspace import etoro_workspace
+from app.phase3_cockpit import render_cockpit, render_engine_view
+from src.intelligence.phase3_committee import ranked_decisions
 
 GREEN = "#1f4f46"
 AMBER = "#ad7529"
 RED = "#ad4b48"
 COLORS = [GREEN, "#758eab", AMBER, "#8d76a2", "#73a198", RED, "#7d8165"]
-APP_RELEASE = "2B.5-CARDS-2026-11-20"
-VIEWS = ["Overview", "Fineco · Piano operativo", "eToro · Piano operativo", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
+APP_RELEASE = "3A-COMMITTEE-DEVELOPMENT-2026-11-22"
+VIEWS = ["Overview", "Investment Committee", "Druckenmiller · Macro", "Livermore · Execution", "Burry · Mispricing", "Buffett · Quality", "Fineco · Piano operativo", "eToro · Piano operativo", "Asset explorer", "Capital flows", "Macro & relative value", "Trading Desk monitor", "Data quality"]
 HORIZONS = {"1 mese": ("momentum_1m", "ret_21"), "3 mesi": ("momentum_3m", "ret_63"), "6 mesi": ("momentum_6m", "ret_126"), "12 mesi": ("momentum_12m", "ret_252")}
 READINESS_ORDER = {"research candidate": 2, "watch": 1, "blocked": 0}
 
@@ -60,9 +62,9 @@ def _number(value, pct: bool = False) -> str:
 
 def _styles() -> None:
     st.markdown("""<style>
-    :root {--td-ink:#162a3d;--td-muted:#66798d;--td-teal:#087f7c;--td-violet:#6556ab;--td-line:#e2e9f1;}
+    :root {--td-ink:#e6edf5;--td-muted:#9badc1;--td-teal:#46d3c4;--td-violet:#a99af5;--td-line:#26384c;}
     .stApp [data-testid="stAppViewContainer"] {
-      background:radial-gradient(circle at 92% 2%,#e9f5f4 0,#f5f8fc 29%,#f5f8fc 100%);
+      background:radial-gradient(circle at 92% 2%,#102d37 0,#080f19 34%,#080f19 100%);
       color:var(--td-ink);
     }
     .stApp .block-container {padding-top:1.35rem;padding-bottom:3.2rem;max-width:1460px;}
@@ -71,25 +73,25 @@ def _styles() -> None:
     .stApp h2 {font-size:1.8rem;}
     .stApp h3 {font-size:1.35rem;}
     .stApp [data-testid="stSidebar"] {
-      background:linear-gradient(175deg,#eaf3f4,#f1f5fa 72%);
-      border-right:1px solid #dce6ed;
+      background:linear-gradient(175deg,#122b35,#101827 72%);
+      border-right:1px solid #293b50;
     }
     .stApp [data-testid="stSidebar"] [role="radiogroup"] label {
       padding:.20rem .45rem;border-radius:10px;transition:background .18s ease;
     }
-    .stApp [data-testid="stSidebar"] [role="radiogroup"] label:hover {background:#dcebe9;}
+    .stApp [data-testid="stSidebar"] [role="radiogroup"] label:hover {background:#263c4a;}
     .stApp [data-testid="stMetric"] {
-      border:1px solid #e0e8f0;border-radius:17px;padding:1rem 1.1rem;
-      background:#fff;box-shadow:0 7px 24px rgba(21,48,66,.045);
+      border:1px solid #273b4c;border-radius:17px;padding:1rem 1.1rem;
+      background:#111e2d;box-shadow:0 7px 24px rgba(0,0,0,.20);
       min-height:118px;
     }
     .stApp [data-testid="stMetricLabel"] {color:var(--td-muted);font-size:.84rem;font-weight:650;}
     .stApp [data-testid="stMetricValue"] {color:var(--td-ink);font-weight:750;letter-spacing:-.04em;}
     .stApp [data-testid="stVerticalBlockBorderWrapper"]>div,
     .stApp [data-testid="stExpander"] {
-      border-radius:18px!important;border-color:#dee8ef!important;
+      border-radius:18px!important;border-color:#304153!important;
     }
-    .stApp [data-testid="stDataFrame"] {border-radius:14px;overflow:hidden;border:1px solid #dfe7ed;}
+    .stApp [data-testid="stDataFrame"] {border-radius:14px;overflow:hidden;border:1px solid #304153;}
     .stApp div[data-testid="stButton"] button[kind="primary"] {
       border:0;border-radius:12px;
       background:linear-gradient(120deg,#0a7777,#1769a5);
@@ -114,15 +116,15 @@ def _styles() -> None:
     .td-section-kicker {font-size:.70rem;font-weight:800;color:var(--td-teal);letter-spacing:.14em;margin:.6rem 0 0;}
     .td-risk-banner {
       border-left:4px solid #eb726b;border-radius:10px;padding:.8rem 1rem;
-      margin:.7rem 0 1rem;background:#fff2ee;color:#7b3937;font-size:.92rem;
+      margin:.7rem 0 1rem;background:#392321;color:#ffd6cf;font-size:.92rem;
     }
     .td-action-label {font-size:.70rem;font-weight:850;letter-spacing:.11em;margin-bottom:.3rem;}
     .td-signal-band {
-      background:linear-gradient(90deg,#e2f4ef,#edf2fb);
-      border:1px solid #d7e8e6;border-radius:14px;
-      padding:.85rem 1.1rem;margin:.45rem 0 .95rem;color:#174b5a;
+      background:linear-gradient(90deg,#153c39,#1c2d45);
+      border:1px solid #2b534c;border-radius:14px;
+      padding:.85rem 1.1rem;margin:.45rem 0 .95rem;color:#daf6f2;
     }
-    .stApp [data-testid="stCaptionContainer"] {color:#627b8b;}
+    .stApp [data-testid="stCaptionContainer"] {color:#9badc1;}
     @media(max-width:760px){
       .stApp .block-container {padding:1rem .65rem 2rem;}
       .stApp h1 {font-size:1.83rem;line-height:1.08;}
@@ -298,6 +300,7 @@ def _opportunity_cards(frame: pd.DataFrame, key: str, histories=None) -> None:
                 state = str(row.get('signal_state', 'BLOCKED'))
                 action = 'Da approfondire' if state == 'RESEARCH CANDIDATE' else 'Attendere conferma' if state == 'WATCHLIST' else 'Verificare lo stato del segnale'
                 st.markdown(f"**{action}** · {state}")
+                st.caption("Committee: " + str(row.get("committee_action", "NO TRADE")) + " · " + str(row.get("trade_readiness", "DATA UNAVAILABLE")))
                 st.write(f"Trend: {details['trend']} · Momentum: {details['momentum']}")
                 if details['extension'] is not None:
                     st.caption(f"Distanza dalla SMA50: {details['extension']:+.1f}% · nessuna classificazione automatica di ipervenduto")
@@ -352,10 +355,11 @@ def _ranking_table(frame: pd.DataFrame, key: str, histories=None) -> None:
     if compact:
         _opportunity_cards(frame,key,histories)
         return
-    columns=["priority","symbol","name","asset_class","subcategory","opportunity_score","rank_change",
+    columns=["priority","symbol","name","committee_action","trade_readiness","asset_class","subcategory","opportunity_score","rank_change",
              "ret_21","ret_63","ret_126","ret_252","volume_signal","risk_category","horizon","signal_state","rationale","observed_at","updated_at"]
     config={"priority":st.column_config.NumberColumn("Priorità",pinned=True),
             "symbol":st.column_config.TextColumn("Ticker",pinned=True),"name":"Nome completo",
+            "committee_action":"Committee action","trade_readiness":"Trade readiness",
             "asset_class":"Asset class","subcategory":"Sottocategoria",
             "opportunity_score":st.column_config.ProgressColumn("Opportunity · tecnico",min_value=0,max_value=100,format="%.1f"),
             "rank_change":st.column_config.NumberColumn("Δ rank globale",format="%+d"),
@@ -379,6 +383,7 @@ def _ranking_table(frame: pd.DataFrame, key: str, histories=None) -> None:
 
 
 def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -> None:
+    render_cockpit(data, filtered, score.removeprefix("momentum_"))
     st.subheader("Global Macro & Risk Regime")
     macro=data.get("macro",{}) or {}
     label=str(macro.get("label","Non disponibile"))
@@ -405,6 +410,9 @@ def _overview(data: dict, filtered: pd.DataFrame, score: str, return_col: str) -
     if top.empty:
         st.info("Nessuna opportunità supera questi filtri e i controlli. Nessun valore neutrale sostituisce i fattori mancanti.")
     else:
+        committee = {item["symbol"]: item for item in ranked_decisions(top, data.get("macro"), limit=10)}
+        top["committee_action"] = top.symbol.map(lambda symbol: committee[symbol]["action"] if symbol in committee else "NO TRADE")
+        top["trade_readiness"] = top.symbol.map(lambda symbol: committee[symbol]["readiness"] if symbol in committee else "DATA UNAVAILABLE")
         _ranking_table(top,"top_opportunities",data.get("histories",{}))
         chart_top=top.head(8).sort_values("technical_score",ascending=True)
         if not chart_top.empty and chart_top.technical_score.notna().any():
@@ -728,6 +736,8 @@ def main() -> None:
         fineco_workspace(data)
     elif view == "eToro · Piano operativo":
         etoro_workspace(data)
+    elif view in ("Investment Committee", "Druckenmiller · Macro", "Livermore · Execution", "Burry · Mispricing", "Buffett · Quality"):
+        render_engine_view(view, data, filtered, suffix)
     elif view == "Asset explorer":
         _explorer(data, filtered)
     elif view == "Capital flows":
