@@ -28,6 +28,7 @@ def asset(**overrides):
 
 def approved_portfolio(**changes):
     result = {"verified": True, "broker_available": True,
+              "as_of": "2026-11-22T18:00:00Z", "drawdown_budget_ok": True,
               "instrument_type": "UNDERLYING", "leverage": 1,
               "post_trade_weight": .08, "correlation_checked": True,
               "fx_checked": True, "liquidity_checked": True}
@@ -122,3 +123,13 @@ def test_naive_or_future_timestamps_fail_closed():
     future = (NOW + timedelta(days=2)).isoformat()
     assert risk_officer(asset(retrieved_at=future), NOW)["state"] == "BLOCK"
     assert macro_engine({"status":"DEGRADED","label":"historically revised"})["state"] == "ABSTAIN"
+
+
+def test_stale_portfolio_or_missing_drawdown_budget_cannot_clear_risk():
+    approved = asset(entry_validation="VALIDATED")
+    stale = risk_officer(approved, NOW, approved_portfolio(as_of="2026-10-01T00:00:00Z"))
+    assert stale["state"] == "BLOCK"
+    assert any("portfolio timestamp" in value for value in stale["blockers"])
+    unchecked = risk_officer(approved, NOW, approved_portfolio(drawdown_budget_ok=False))
+    assert unchecked["state"] == "BLOCK"
+    assert any("drawdown" in value for value in unchecked["blockers"])
