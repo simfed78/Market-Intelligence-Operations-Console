@@ -79,10 +79,27 @@ def test_provider_url_is_pinned_and_cannot_be_forged(tmp_path):
                       {record["symbol"]})
 
 
-def test_bls_missing_or_nonfinite_month_not_interpolated():
+def test_bls_explicitly_unreported_month_is_kept_missing_and_regime_uses_comparable_months(tmp_path):
     payload=sample_bls()
-    payload["Results"]["series"][0]["data"][7]["value"]="."
-    with pytest.raises(ValueError):
+    # October 2025 not available, so October 2026 has no valid year-on-year
+    # match. The regime must use September 2026 vs September 2025 instead.
+    payload["Results"]["series"][0]["data"][5]["value"]="-"
+    cpi=parse_bls_cpi(payload,acquired_at=NOW)
+    assert "2025-10-01,\\n" in cpi["payload"]
+    ip=parse_g17_indpro(sample_g17(),acquired_at=NOW)
+    store=Store(tmp_path)
+    for record in (cpi,ip):
+        import_record(store,record,{record["symbol"]})
+    context=macro_context(store.latest_snapshots(),NOW)
+    assert context["label"]!="Non disponibile"
+    assert "a 2026-09" in context["reason"]
+    assert context["observations"].loc[context["observations"].series.eq("CPIAUCSL"),"observed_at"].iloc[0]=="2026-10-01"
+
+
+def test_unreported_cpi_gap_without_source_declaration_is_rejected():
+    payload=sample_bls()
+    payload["Results"]["series"][0]["data"].pop(5)
+    with pytest.raises(ValueError,match="Unreported monthly gap"):
         parse_bls_cpi(payload,acquired_at=NOW)
 
 
