@@ -52,3 +52,19 @@ jobs:
           done
           cat /tmp/phase3_streamlit.log
           exit 1
+      - name: Live issuing-agency monthly CPI/IP data verification
+        timeout-minutes: 2
+        run: |
+          python - <<'PY'
+          from datetime import datetime,timezone
+          from src.intelligence.official_macro import fetch_bls_cpi,fetch_frb_indpro
+          for getter in (fetch_bls_cpi,fetch_frb_indpro):
+              record=getter()
+              lines=record["payload"].splitlines()
+              observed=lines[-1].split(",")[0]
+              age=(datetime.now(timezone.utc).date()-datetime.fromisoformat(observed).date()).days
+              print(record["symbol"],record["source"],"observed",observed,
+                    "age_days",age,"provider",record["source_url"],
+                    "monthly_observations",len(lines)-1)
+              assert len(lines)>=17 and 0<=age<=75
+          PY

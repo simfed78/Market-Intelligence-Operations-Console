@@ -549,15 +549,46 @@ def _macro(data: dict, filtered: pd.DataFrame) -> None:
     observations = _frame(macro.get("observations"))
     if not observations.empty:
         known=int(observations.get("value",pd.Series(dtype=float)).notna().sum())
+        references=int(observations.get("status",pd.Series(dtype=str)).isin(
+            ["ARCHIVED_METADATA","DEGRADED"]).sum())
         stale=int(observations.get("stale",pd.Series(dtype=bool)).eq(True).sum())
-        archived=int(observations.get("status",pd.Series(dtype=str)).eq("ARCHIVED_METADATA").sum())
-        st.caption(f"Serie numeriche nel contesto privato: {known}/{len(observations)}; "
-                   f"riferimenti verificati nell'archivio pubblico: {archived}; "
-                   f"oltre soglia di freschezza: {stale}. "
-                   "L'archivio pubblico contiene solo indicatori derivati e metadati: "
-                   "apri la fonte ufficiale per i valori e la serie storica completa. "
-                   "Observed = periodo economico; acquired = data di acquisizione.")
-    _table(observations, key="macro_observations")
+        st.caption(f"Valori disponibili: {known}/{len(observations)} · "
+                   f"fonti o osservazioni verificate: {references}/{len(observations)} · "
+                   f"fuori soglia di freschezza: {stale}. "
+                   "Solo CPI e produzione industriale possono essere riportati come livelli "
+                   "nel feed pubblico; le serie originali sono consultabili tramite il link FRED.")
+        # Mobile-first: an 8-column grid is unusable on iPhone.
+        with st.expander("Indicatori macro · schede leggibili su telefono", expanded=True):
+            for item in observations.to_dict("records"):
+                code=str(item.get("series") or "UNKNOWN")
+                name=str(item.get("name") or code)
+                status=str(item.get("status") or "MISSING")
+                value=item.get("value")
+                val=pd.to_numeric(pd.Series([value]),errors="coerce").iloc[0]
+                unit=str(item.get("unit") or "")
+                observed=item.get("observed_at") or "Non disponibile"
+                source=str(item.get("source") or "Non disponibile")
+                url=f"https://fred.stlouisfed.org/series/{code}" if code in {
+                    "CPIAUCSL","INDPRO","DGS10","DFII10","T10YIE",
+                    "BAMLH0A0HYM2","BAMLC0A0CM","NFCI"} else ""
+                with st.container(border=True):
+                    st.markdown(f"**{name}** · `{code}`")
+                    if pd.notna(val):
+                        st.markdown(f"**{float(val):,.3f} {unit}** · {status}")
+                    else:
+                        st.markdown(f"**Valore non disponibile nel feed** · {status}")
+                    st.caption(f"Osservazione: {observed} · Fonte: {source} · "
+                               f"Stale: {item.get('stale')}")
+                    if url:
+                        st.markdown(f"[Apri serie e storico su FRED]({url})")
+                    if source == "BLS":
+                        st.markdown("[Fonte primaria BLS · CPI-U](https://api.bls.gov/publicAPI/v1/timeseries/data/CUSR0000SA0)")
+                    elif source == "FRB-G17":
+                        st.markdown("[Fonte primaria Federal Reserve · G.17](https://www.federalreserve.gov/releases/g17/Current/ipdisk/ip_sa.txt)")
+        with st.expander("Tabella macro completa e metadati", expanded=False):
+            _table(observations, key="macro_observations")
+    else:
+        st.warning("Macro DATA UNAVAILABLE — nessuna fonte verificata per l'orizzonte selezionato.")
     st.subheader("Azioni e obbligazioni")
     candidates = [s for s in ["SPY", "IEF", "TLT", "LQD", "HYG", "TIP"] if s in filtered.get("symbol", pd.Series(dtype=str)).values]
     selected = st.multiselect("Proxy del confronto", candidates, default=candidates[:3], max_selections=6)

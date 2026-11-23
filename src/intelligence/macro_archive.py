@@ -1,4 +1,4 @@
-"""A derived-only macro publication. No FRED raw observations are redistributed.
+"""A small macro publication with public-sector latest values, no raw histories.
 
 The scheduled research producer can privately read provider histories; the public
 research-data branch stores only derived regime commentary, freshness metadata,
@@ -19,8 +19,9 @@ import pandas as pd
 
 from .macro import SERIES, macro_context
 from .store import Store
+from .official_macro import CPI_URL, IP_URL
 
-SCHEMA_VERSION = "macro-research-summary.v1"
+SCHEMA_VERSION = "macro-research-summary.v2"
 ARCHIVE_URL = (
     "https://raw.githubusercontent.com/simfed78/"
     "Market-Intelligence-Operations-Console/research-data/"
@@ -97,8 +98,24 @@ def _valid(document, *, now=None):
             return False
         if not isinstance(item.get("input_sha256"), str) or len(item["input_sha256"]) != 64:
             return False
-        if "value" in item or "payload" in item or "api_key" in item:
+        if item.get("acquisition_source") not in ("FRED", "FRED-MD","BLS","FRB-G17"):
             return False
+        if item.get("acquisition_source") == "FRED-MD" and code not in ("CPIAUCSL", "INDPRO"):
+            return False
+        if (item.get("acquisition_source") == "BLS" and code != "CPIAUCSL"
+                or item.get("acquisition_source") == "FRB-G17" and code != "INDPRO"):
+            return False
+        if item.get("acquisition_source") == "BLS" and item.get("acquisition_url") != CPI_URL:
+            return False
+        if item.get("acquisition_source") == "FRB-G17" and item.get("acquisition_url") != IP_URL:
+            return False
+        if "payload" in item or "api_key" in item:
+            return False
+        if "value" in item:
+            value = item["value"]
+            if (code not in ("CPIAUCSL", "INDPRO") or isinstance(value, bool)
+                    or not isinstance(value, (float,int)) or not 0 < value < 1_000_000):
+                return False
     derived = document.get("derived_regime")
     if not isinstance(derived, dict):
         return False
@@ -125,16 +142,23 @@ def build_archive(root, *, now=None):
                 or row.get("observed_at") is None):
             continue
         original = snapshots.get("FRED:" + code)
-        if not isinstance(original, dict) or original.get("source") != "FRED":
+        if not isinstance(original, dict) or original.get("source") not in ("FRED","FRED-MD","BLS","FRB-G17"):
             continue
-        observations.append({
+        item = {
             "series": code,
             "observed_at": row["observed_at"],
             "retrieved_at": row["retrieved_at"],
-            # Always point to the official series page for historical values.
             "source_url": f"https://fred.stlouisfed.org/series/{code}",
+            "acquisition_source": original["source"],
             "input_sha256": original["sha256"],
-        })
+            **({"acquisition_url": original["source_url"]}
+               if original["source"] in ("BLS","FRB-G17") else {}),
+        }
+        # Public-sector CPI and IP latest observations may be quoted;
+        # do not redistribute raw historical CSV, or proprietary IG/HY levels.
+        if code in ("CPIAUCSL", "INDPRO"):
+            item["value"] = float(row["value"])
+        observations.append(item)
     derived = {
         "label": result["label"] if result["label"] != "Non disponibile" else None,
         "reason": result["reason"] if result["label"] != "Non disponibile" else None,
@@ -208,13 +232,20 @@ def archived_macro_context(root, *, as_of=None):
         stale = ((now.date() - datetime.fromisoformat(observed).date()).days > max_age
                  if observed else None)
         observations.append({
-            "series": code, "name": name, "unit": unit, "value": None,
+            "series": code, "name": name, "unit": unit,
+            "value": item.get("value") if item else None,
             "observed_at": observed, "retrieved_at": item["retrieved_at"] if item else None,
             "available_at": item["retrieved_at"] if item else None,
-            "source": "FRED", "source_url": f"https://fred.stlouisfed.org/series/{code}",
-            "status": "ARCHIVED_METADATA" if item else "MISSING",
+            "source": item["acquisition_source"] if item else "FRED",
+            "source_url": (item.get("acquisition_url")
+                           if item and item.get("acquisition_url")
+                           else f"https://fred.stlouisfed.org/series/{code}"),
+            "status": ("DEGRADED" if item and "value" in item else
+                       "ARCHIVED_METADATA" if item else "MISSING"),
             "stale": stale, "vintage": "Revised latest; original release vintage not verified",
-            "reason": ("Published indicator not redistributed; open source link"
+            "reason": ("Latest public-sector observation; full history on official series page"
+                       if item and "value" in item else
+                       "Historical series withheld; see linked official source"
                        if item else "No verified published indicator"),
         })
     fresh_macro = all(code in saved and (now.date() - datetime.fromisoformat(
