@@ -54,7 +54,7 @@ jobs:
           exit 1
       - name: Diagnose authoritative macro provider coverage
         timeout-minutes: 2
-        run: python scripts/diagnose_macro_sources.py
+        run: PYTHONPATH=. python scripts/diagnose_macro_sources.py
       - name: Official FRED-MD live source probe
         # External availability is verified independently of synthetic unit tests.
         # Failure blocks publication of this fallback until a real source works.
