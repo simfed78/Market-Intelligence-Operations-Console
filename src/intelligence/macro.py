@@ -23,7 +23,8 @@ def macro_context(snapshots, as_of=None):
                  available_at=None,retrieved_at=None,source='FRED',source_url=f'https://fred.stlouisfed.org/series/{code}',
                  publication_at=None,vintage='Revised latest; release/vintage unknown')
         row.update(stale=None,reason='Nessuna serie valida acquisita')
-        if isinstance(snap,dict) and snap.get('kind')=='macro' and snap.get('source')=='FRED':
+        if (isinstance(snap,dict) and snap.get('kind')=='macro'
+                and snap.get('source') in ('FRED','FRED-MD')):
             try:
                 if pd.Timestamp(snap['retrieved_at'])>now: raise ValueError('Not yet available')
                 if hashlib.sha256(snap['payload'].encode()).hexdigest()!=snap['sha256']: raise ValueError('Hash mismatch')
@@ -40,7 +41,9 @@ def macro_context(snapshots, as_of=None):
                 if valid_values and not f.date.duplicated().any():
                     data[code]=f
                     row.update(value=float(f.value.iloc[-1]), observed_at=f.date.iloc[-1].date().isoformat(),
-                               available_at=snap['retrieved_at'],retrieved_at=snap['retrieved_at'],status='DEGRADED',reason='Fonte FRED reale; release e vintage storici non qualificati')
+                               available_at=snap['retrieved_at'],retrieved_at=snap['retrieved_at'],
+                               source=snap['source'], source_url=snap.get('source_url'),
+                               status='DEGRADED',reason='Osservazione da '+snap['source']+'; release/vintage storici non qualificati')
                     row['stale']=(now.tz_localize(None).date()-f.date.iloc[-1].date()).days>max_age
             except (ValueError,KeyError,TypeError):
                 pass
