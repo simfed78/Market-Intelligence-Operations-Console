@@ -48,8 +48,8 @@ def test_missing_last_month_not_replaced_by_synthetic_value():
 
 
 def test_gapped_months_are_not_accepted_as_continuous_release():
-    result=parse_fred_md(monthly_csv(bad_gap=True),acquired_at=NOW,source_url=OFFICIAL_URLS[0])
-    assert "FRED:CPIAUCSL" not in result and "FRED:INDPRO" not in result
+    with pytest.raises(ValueError, match="not qualified"):
+        parse_fred_md(monthly_csv(bad_gap=True),acquired_at=NOW,source_url=OFFICIAL_URLS[0])
 
 
 def test_schema_validation_rejects_mock_headers_and_wrong_provider(tmp_path):
