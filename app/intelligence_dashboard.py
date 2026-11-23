@@ -550,10 +550,13 @@ def _macro(data: dict, filtered: pd.DataFrame) -> None:
     if not observations.empty:
         known=int(observations.get("value",pd.Series(dtype=float)).notna().sum())
         stale=int(observations.get("stale",pd.Series(dtype=bool)).eq(True).sum())
-        st.caption(f"Osservazioni pubblicate e conservate: {known}/{len(observations)}; "
+        archived=int(observations.get("status",pd.Series(dtype=str)).eq("ARCHIVED_METADATA").sum())
+        st.caption(f"Serie numeriche nel contesto privato: {known}/{len(observations)}; "
+                   f"riferimenti verificati nell'archivio pubblico: {archived}; "
                    f"oltre soglia di freschezza: {stale}. "
-                   "Observed = periodo economico; acquired = ultima acquisizione verificata. "
-                   "Non sono quotazioni in tempo reale né vintage storici point-in-time.")
+                   "L'archivio pubblico contiene solo indicatori derivati e metadati: "
+                   "apri la fonte ufficiale per i valori e la serie storica completa. "
+                   "Observed = periodo economico; acquired = data di acquisizione.")
     _table(observations, key="macro_observations")
     st.subheader("Azioni e obbligazioni")
     candidates = [s for s in ["SPY", "IEF", "TLT", "LQD", "HYG", "TIP"] if s in filtered.get("symbol", pd.Series(dtype=str)).values]
