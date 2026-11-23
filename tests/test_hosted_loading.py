@@ -21,6 +21,8 @@ def test_duplicate_start_is_running_not_outage(tmp_path,monkeypatch):
         started.set();assert release.wait(2)
         return {'acquired':44,'cached':0,'errors':[]}
     monkeypatch.setattr(hosted,'refresh_sources',refresh)
+    monkeypatch.setattr(hosted,'bootstrap_public_macro',
+                        lambda root: {'status':'UNAVAILABLE','imported':0})
     try:
         first=hosted.start_public_refresh(tmp_path)
         assert started.wait(1)
@@ -38,6 +40,8 @@ def test_failure_is_diagnostic_and_not_retried_by_render(tmp_path,monkeypatch):
     calls=[]
     def bad(root,**kwargs):calls.append(root);raise OSError('declared test failure')
     monkeypatch.setattr(hosted,'refresh_sources',bad)
+    monkeypatch.setattr(hosted,'bootstrap_public_macro',
+                        lambda root: {'status':'UNAVAILABLE','imported':0})
     result=hosted.refresh_public(tmp_path)
     assert result['errors'][0]['error']=='OSError'
     state=hosted.start_public_refresh(tmp_path)
