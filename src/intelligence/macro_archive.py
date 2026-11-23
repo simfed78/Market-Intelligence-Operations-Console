@@ -97,9 +97,12 @@ def _valid(document, *, now=None):
             return False
         if not isinstance(item.get("input_sha256"), str) or len(item["input_sha256"]) != 64:
             return False
-        if item.get("acquisition_source") not in ("FRED", "FRED-MD"):
+        if item.get("acquisition_source") not in ("FRED", "FRED-MD","BLS","FRB-G17"):
             return False
         if item.get("acquisition_source") == "FRED-MD" and code not in ("CPIAUCSL", "INDPRO"):
+            return False
+        if (item.get("acquisition_source") == "BLS" and code != "CPIAUCSL"
+                or item.get("acquisition_source") == "FRB-G17" and code != "INDPRO"):
             return False
         if "payload" in item or "api_key" in item:
             return False
@@ -134,7 +137,7 @@ def build_archive(root, *, now=None):
                 or row.get("observed_at") is None):
             continue
         original = snapshots.get("FRED:" + code)
-        if not isinstance(original, dict) or original.get("source") not in ("FRED","FRED-MD"):
+        if not isinstance(original, dict) or original.get("source") not in ("FRED","FRED-MD","BLS","FRB-G17"):
             continue
         item = {
             "series": code,
