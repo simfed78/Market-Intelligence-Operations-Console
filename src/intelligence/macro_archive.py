@@ -150,8 +150,12 @@ def main(argv=None):
             atomic_json(args.output, data)
         print(json.dumps({"new_records": len(data["records"])}))
         return 0
-    old = json.loads(args.previous.read_text(encoding="utf-8")) if args.previous and args.previous.exists() else {}
-    new = json.loads(args.candidate.read_text(encoding="utf-8")) if args.candidate.exists() else {}
+    def read_optional(path):
+        if not path or not path.exists() or not path.stat().st_size:
+            return {}
+        return json.loads(path.read_text(encoding="utf-8"))
+    old = read_optional(args.previous)
+    new = read_optional(args.candidate)
     result = merge_archive(old, new, now=now)
     if result["records"]:
         atomic_json(args.output, result)
