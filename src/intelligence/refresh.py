@@ -149,9 +149,11 @@ def cache_usable(record, now):
     except (KeyError,ValueError,TypeError):return False
 
 
-def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use_cached=False, request_interval=0, budget_seconds=None):
+def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use_cached=False, request_interval=0, budget_seconds=None, refresh_macro=True):
     root=Path(root).resolve();store=Store(root)
-    allowed=set(load_universe(root).symbol)|{'FRED:'+s for s in SERIES}
+    allowed=set(load_universe(root).symbol)
+    if refresh_macro:
+        allowed |= {'FRED:'+s for s in SERIES}
     run_at=utc_now(); errors=[]; success=[]; cached=[]
     done=0;total=len(allowed)
     def report(symbol):
