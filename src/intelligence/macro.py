@@ -36,7 +36,7 @@ def macro_context(snapshots, as_of=None):
                 valid_values=not f.empty and np.isfinite(f.value.to_numpy()).all()
                 if code in ('CPIAUCSL','INDPRO'):
                     valid_values=valid_values and (f.value>0).all() and not f.date.dt.to_period('M').duplicated().any()
-                    if len(f)>1:
+                    if len(f)>1 and not (code=='CPIAUCSL' and snap.get('source')=='BLS'):
                         valid_values=valid_values and len(pd.period_range(f.date.iloc[0],f.date.iloc[-1],freq='M'))==len(f)
                 if valid_values and not f.date.duplicated().any():
                     data[code]=f
@@ -53,10 +53,29 @@ def macro_context(snapshots, as_of=None):
     reason='Servono CPI e produzione industriale reali con sufficiente storia. Nessun fallback neutrale.'
     fresh=set(frame.loc[frame.get('stale',pd.Series(True,index=frame.index)).eq(False),'series'])
     if all(c in data and c in fresh and len(data[c])>=16 for c in ('CPIAUCSL','INDPRO')):
-        c=data['CPIAUCSL'].value; g=data['INDPRO'].value
-        inflation=float(c.iloc[-1]/c.iloc[-13]-1)*100
-        old=float(c.iloc[-4]/c.iloc[-16]-1)*100
-        growth=float(g.iloc[-1]/g.iloc[-4]-1)*100
-        label=('Espansione' if growth>0 else 'Contrazione')+' / '+('inflazione in accelerazione' if inflation>old else 'disinflazione')
-        reason=f'Contesto USA indicativo: produzione industriale 3 mesi {growth:+.2f}%; CPI annuo {inflation:.2f}%, contro {old:.2f}% tre mesi prima. Dati rivisti, periodi di osservazione diversi; disponibilità storica non certificata, escluso dal ranking.'
+        c=data['CPIAUCSL'].set_index('date').value
+        g=data['INDPRO'].set_index('date').value
+        # Point-in-observation-date comparisons, not positional "12 rows ago":
+        # BLS may explicitly mark a month unavailable (e.g. a survey interruption).
+        comparable=None
+        for observed in reversed(c.index):
+            year_ago=observed-pd.DateOffset(months=12)
+            earlier=observed-pd.DateOffset(months=3)
+            earlier_year=observed-pd.DateOffset(months=15)
+            if all(d in c.index for d in (year_ago,earlier,earlier_year)):
+                comparable=(observed,year_ago,earlier,earlier_year)
+                break
+        current_growth=g.index[-1]
+        previous_growth=current_growth-pd.DateOffset(months=3)
+        if comparable is not None and previous_growth in g.index:
+            observed,year_ago,earlier,earlier_year=comparable
+            inflation=float(c.loc[observed]/c.loc[year_ago]-1)*100
+            old=float(c.loc[earlier]/c.loc[earlier_year]-1)*100
+            growth=float(g.loc[current_growth]/g.loc[previous_growth]-1)*100
+            label=('Espansione' if growth>0 else 'Contrazione')+' / '+('inflazione in accelerazione' if inflation>old else 'disinflazione')
+            reason=(f'Contesto USA indicativo: produzione industriale 3 mesi {growth:+.2f}% '
+                    f'(a {current_growth:%Y-%m}); CPI annuo {inflation:.2f}% '
+                    f'(a {observed:%Y-%m}), contro {old:.2f}% tre mesi prima. '
+                    'Confronti solo tra mesi effettivamente osservati, nessuna interpolazione; '
+                    'dati rivisti, vintage storici non certificati, escluso dal ranking.')
     return dict(status='DEGRADED' if frame.value.notna().any() else 'MISSING',label=label,reason=reason,observations=frame)
