@@ -76,7 +76,7 @@ def test_bootstrap_stores_derived_only_and_preserves_dated_metadata(tmp_path, mo
         def __exit__(self, *_): return False
         def read(self, *_): return raw
     monkeypatch.setattr(macro_archive, "urlopen", lambda request, timeout: Response())
-    result = macro_archive.bootstrap_public_macro(tmp_path)
+    result = macro_archive.bootstrap_public_macro(tmp_path, now=NOW)
     assert result == {"status": "ARCHIVED", "imported": 2}
     assert not Store(tmp_path).latest_snapshots().get("FRED:NON_EXISTENT")
     restored = macro_archive.archived_macro_context(tmp_path, as_of=NOW)
