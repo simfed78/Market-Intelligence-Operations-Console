@@ -26,7 +26,7 @@ def _work(root):
         # Recover the last verified published FRED observations first. An outage
         # must not erase existing macro data or block the market refresh.
         archive = bootstrap_public_macro(root)
-        result=refresh_sources(root,use_cached=True,request_interval=.35,budget_seconds=120,progress=_progress)
+        result=refresh_sources(root,use_cached=True,request_interval=.35,budget_seconds=120,progress=_progress,refresh_macro=False)
         result['macro_archive'] = archive
         _progress({'status':'COMPLETE','result':result})
         return result
