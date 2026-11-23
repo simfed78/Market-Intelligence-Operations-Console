@@ -83,7 +83,7 @@ def test_bootstrap_stores_derived_only_and_preserves_dated_metadata(tmp_path, mo
     assert restored["label"] != "Non disponibile"
     assert restored["archived"] is True
     assert restored["observations"].value.notna().sum() == 2
-    assert restored["observations"].status.eq("ARCHIVED_METADATA").sum() == 2
+    assert restored["observations"].status.eq("DEGRADED").sum() == 2
 
 
 def test_timeout_cannot_destroy_previous_derived_summary(tmp_path, monkeypatch):
