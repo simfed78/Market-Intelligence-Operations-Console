@@ -71,6 +71,8 @@ jobs:
         env:
           TRADING_DESK_PUBLIC: "1"
           TRADING_DESK_ROOT: ""
+          # Optional official FRED API token; public CSV remains available without one.
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python -m src.intelligence.refresh --root . --request-interval 0.4 --budget-seconds 600
       - name: Export only verified, derived research metrics
         env:
@@ -81,6 +83,19 @@ jobs:
           python -m src.intelligence.report_export --root . \
             --output "$RUNNER_TEMP/research-brief/latest.json" \
             --history-dir "$RUNNER_TEMP/research-brief/history"
+      - name: Prepare verified FRED archive from latest successfully downloaded series
+        env:
+          TRADING_DESK_PUBLIC: "1"
+        run: |
+          python -m src.intelligence.macro_archive --root . \
+            --output "$RUNNER_TEMP/research-brief/macro-candidate.json"
+          git fetch --no-tags origin research-data
+          git show origin/research-data:exports/research/macro_latest.json \
+            > "$RUNNER_TEMP/research-brief/macro-previous.json" || true
+          python -m src.intelligence.macro_archive \
+            --previous "$RUNNER_TEMP/research-brief/macro-previous.json" \
+            --candidate "$RUNNER_TEMP/research-brief/macro-candidate.json" \
+            --output "$RUNNER_TEMP/research-brief/macro-merged.json"
       - name: Publish to the separate research-data branch
         env:
           GH_TOKEN: ${{ github.token }}
@@ -91,7 +106,11 @@ jobs:
           mkdir -p exports/research/history
           cp "$RUNNER_TEMP/research-brief/latest.json" exports/research/latest.json
           cp "$RUNNER_TEMP/research-brief/history/"*.json exports/research/history/
-          git add exports/research/latest.json exports/research/history/
+          if [ -f "$RUNNER_TEMP/research-brief/macro-merged.json" ]; then
+            cp "$RUNNER_TEMP/research-brief/macro-merged.json" exports/research/macro_latest.json
+          fi
+          git add exports/research/latest.json exports/research/history/ exports/research/macro_latest.json 2>/dev/null || \
+            git add exports/research/latest.json exports/research/history/
           if git diff --cached --quiet; then
             echo "No qualified research changes to publish"
             exit 0
