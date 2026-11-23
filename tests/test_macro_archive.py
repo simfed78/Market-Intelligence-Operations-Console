@@ -37,7 +37,7 @@ def test_archive_retains_verified_source_metadata_not_raw_observations(tmp_path)
     assert len(document["observations"]) == 2
     assert "payload" not in json.dumps(document)
     assert "observation_date" not in json.dumps(document)
-    assert all("value" not in item for item in document["observations"])
+    assert all("value" in item for item in document["observations"])  # public-sector CPI/IP
     assert all(len(item["input_sha256"]) == 64 for item in document["observations"])
     assert document["derived_regime"]["label"] is not None
 
@@ -52,7 +52,7 @@ def test_missing_new_observations_cannot_erase_previous_archive(tmp_path):
 def test_tampered_source_and_raw_values_rejected(tmp_path):
     archive = build(tmp_path, "CPIAUCSL")
     forged = json.loads(json.dumps(archive))
-    forged["observations"][0]["value"] = 99.0
+    forged["observations"][0]["value"] = float("inf")
     forged["integrity_sha256"] = macro_archive._digest(forged)
     assert not macro_archive._valid(forged, now=NOW)
     forged2 = json.loads(json.dumps(archive))
@@ -82,7 +82,7 @@ def test_bootstrap_stores_derived_only_and_preserves_dated_metadata(tmp_path, mo
     restored = macro_archive.archived_macro_context(tmp_path, as_of=NOW)
     assert restored["label"] != "Non disponibile"
     assert restored["archived"] is True
-    assert restored["observations"].value.isna().all()
+    assert restored["observations"].value.notna().sum() == 2
     assert restored["observations"].status.eq("ARCHIVED_METADATA").sum() == 2
 
 
@@ -130,3 +130,18 @@ def test_macro_circuit_limits_repeated_timeouts(tmp_path, monkeypatch):
     assert len(macro_calls) == 2
     assert any(item["error"] == "FredCircuitOpen" for item in result["errors"])
     assert result["acquired"] == 0
+
+
+def test_proprietary_credit_spread_cannot_be_published_as_raw_value(tmp_path):
+    archive = build(tmp_path, "CPIAUCSL")
+    forged = json.loads(json.dumps(archive))
+    forged["observations"].append({
+        "series": "BAMLC0A0CM",
+        "observed_at": "2026-11-20",
+        "retrieved_at": "2026-11-22T10:00:00Z",
+        "source_url": "https://fred.stlouisfed.org/series/BAMLC0A0CM",
+        "acquisition_source": "FRED", "input_sha256": "1" * 64,
+        "value": 1.3,
+    })
+    forged["integrity_sha256"] = macro_archive._digest(forged)
+    assert not macro_archive._valid(forged, now=NOW)
