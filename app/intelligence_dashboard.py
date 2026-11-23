@@ -580,7 +580,11 @@ def _macro(data: dict, filtered: pd.DataFrame) -> None:
                     st.caption(f"Osservazione: {observed} · Fonte: {source} · "
                                f"Stale: {item.get('stale')}")
                     if url:
-                        st.markdown(f"[Apri serie e storico ufficiale su FRED]({url})")
+                        st.markdown(f"[Apri serie e storico su FRED]({url})")
+                    if source == "BLS":
+                        st.markdown("[Fonte primaria BLS · CPI-U](https://api.bls.gov/publicAPI/v1/timeseries/data/CUSR0000SA0)")
+                    elif source == "FRB-G17":
+                        st.markdown("[Fonte primaria Federal Reserve · G.17](https://www.federalreserve.gov/releases/g17/Current/ipdisk/ip_sa.txt)")
         with st.expander("Tabella macro completa e metadati", expanded=False):
             _table(observations, key="macro_observations")
     else:
