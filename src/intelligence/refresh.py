@@ -163,7 +163,7 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
     allowed=set(load_universe(root).symbol)
     if refresh_macro:
         allowed |= {'FRED:'+s for s in SERIES}
-    run_at=utc_now(); errors=[]; success=[]; cached=[]
+    run_at=utc_now(); errors=[]; success=[]; cached=[]; fred_md_issue=None
     done=0;total=len(allowed)
     def report(symbol):
         nonlocal done
@@ -228,7 +228,9 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
                             report(symbol)
                             group.remove(symbol)
                 except Exception as exc:
-                    errors.append(source_error("FRED-MD", exc))
+                    # Each failed series is retried through official FRED,
+                    # so a bundle-level timeout is not another series failure.
+                    fred_md_issue=source_error("FRED-MD", exc)
             with ThreadPoolExecutor(max_workers=workers) as pool:
                 futures={pool.submit(fetch_paced,symbol):symbol for symbol in group}
                 for future in as_completed(futures):
@@ -244,6 +246,7 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
     counts=data['metrics'].price_status.value_counts().to_dict()
     summary=dict(mode='RESEARCH_ONLY',requested=len(allowed),acquired=len(success),cached=len(cached),errors=errors,
                  market_quality=counts,macro_status=data['macro']['status'],
+                 macro_fallback=fred_md_issue,
                  note='Research input checks only; not Core qualification. No broker access.')
     completed_at=utc_now()
     summary['started_at']=run_at
