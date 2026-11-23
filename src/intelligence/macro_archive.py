@@ -171,7 +171,7 @@ def merge_archive(previous, incoming, *, now=None):
     return document
 
 
-def bootstrap_public_macro(root, *, url=ARCHIVE_URL):
+def bootstrap_public_macro(root, *, url=ARCHIVE_URL, now=None):
     """Read-only Cloud bootstrap. No FRED network requests and no raw data."""
     try:
         request = Request(url, headers={"User-Agent": "TradingDesk-ReadOnly/1.0"})
@@ -180,7 +180,7 @@ def bootstrap_public_macro(root, *, url=ARCHIVE_URL):
         if len(raw) > 120_000:
             return {"status": "UNAVAILABLE", "imported": 0}
         document = json.loads(raw.decode("utf-8"))
-        if not _valid(document):
+        if not _valid(document, now=now):
             return {"status": "UNAVAILABLE", "imported": 0}
         atomic_json(Path(root) / LOCAL_COPY, document)
         return {"status": "ARCHIVED", "imported": len(document["observations"])}
