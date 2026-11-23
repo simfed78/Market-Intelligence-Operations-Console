@@ -17,3 +17,7 @@ outputs/json/
 outputs/reports/
 outputs/tables/
 outputs/html/
+
+# Quant research provider snapshots are local only; never commit prices.
+data/simons_history/
+outputs/research/
