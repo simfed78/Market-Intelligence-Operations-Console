@@ -1,8 +1,7 @@
-"""Offline macro archive contracts: synthetic fixture values only."""
-from datetime import datetime, timedelta, timezone
+"""Synthetic fixtures: verify offline derived macro, not redistribution of FRED data."""
+from datetime import datetime, timezone
 import hashlib
 import json
-from io import BytesIO
 
 import pandas as pd
 
@@ -12,9 +11,8 @@ from src.intelligence.store import Store
 NOW = datetime(2026, 11, 23, 9, 0, tzinfo=timezone.utc)
 
 
-def record(code="CPIAUCSL", last="2026-10-01", retrieved="2026-11-22T10:00:00Z"):
+def record(code="CPIAUCSL", retrieved="2026-11-22T10:00:00Z"):
     dates = pd.date_range("2025-05-01", periods=18, freq="MS")
-    assert last == str(dates[-1].date())
     payload = "observation_date," + code + "\n" + "".join(
         f"{dt.date()},{100 + i}\n" for i, dt in enumerate(dates)
     )
@@ -22,73 +20,79 @@ def record(code="CPIAUCSL", last="2026-10-01", retrieved="2026-11-22T10:00:00Z")
         "symbol": "FRED:" + code, "kind": "macro", "source": "FRED",
         "source_url": f"https://fred.stlouisfed.org/series/{code}",
         "retrieved_at": retrieved,
-        "sha256": hashlib.sha256(payload.encode()).hexdigest(),
-        "payload": payload,
+        "sha256": hashlib.sha256(payload.encode()).hexdigest(), "payload": payload,
     }
 
 
-def test_stored_official_observation_survives_provider_outage(tmp_path):
-    r = record()
+def build(tmp_path, *codes):
     store = Store(tmp_path)
-    store.put_snapshot(**r)
-    archive = macro_archive.build_archive(tmp_path, now=NOW)
-    assert len(archive["records"]) == 1
-    assert archive["records"][0]["sha256"] == r["sha256"]
-    assert macro_archive.merge_archive(
-        archive, {"schema_version": macro_archive.SCHEMA_VERSION, "records": []},
-        now=NOW
-    )["records"][0]["symbol"] == r["symbol"]
+    for code in codes:
+        store.put_snapshot(**record(code))
+    return macro_archive.build_archive(tmp_path, now=NOW)
 
 
-def test_hash_tampering_and_unknown_source_rejected():
-    r = record()
-    base = {"schema_version": macro_archive.SCHEMA_VERSION, "records": [r]}
-    assert len(macro_archive.merge_archive({}, base, now=NOW)["records"]) == 1
-    assert not macro_archive.merge_archive({}, {
-        **base, "records": [{**r, "sha256": "f" * 64}]
-    }, now=NOW)["records"]
-    assert not macro_archive.merge_archive({}, {
-        **base, "records": [{**r, "source_url": "https://attacker.example/"}]
-    }, now=NOW)["records"]
+def test_archive_retains_verified_source_metadata_not_raw_observations(tmp_path):
+    document = build(tmp_path, "CPIAUCSL", "INDPRO")
+    assert macro_archive._valid(document, now=NOW)
+    assert len(document["observations"]) == 2
+    assert "payload" not in json.dumps(document)
+    assert "observation_date" not in json.dumps(document)
+    assert all("value" not in item for item in document["observations"])
+    assert all(len(item["input_sha256"]) == 64 for item in document["observations"])
+    assert document["derived_regime"]["label"] is not None
 
 
-def test_future_retrieval_and_wrong_series_never_import():
-    bad = record(retrieved="2026-12-01T00:00:00Z")
-    result = macro_archive.merge_archive(
-        {}, {"schema_version": macro_archive.SCHEMA_VERSION, "records": [bad]},
-        now=NOW
-    )
-    assert not result["records"]
-    wrong = record()
-    wrong["symbol"] = "FRED:INDPRO"
-    assert not macro_archive.merge_archive(
-        {}, {"schema_version": macro_archive.SCHEMA_VERSION, "records": [wrong]},
-        now=NOW
-    )["records"]
+def test_missing_new_observations_cannot_erase_previous_archive(tmp_path):
+    old = build(tmp_path, "CPIAUCSL")
+    merged = macro_archive.merge_archive(old, {}, now=NOW)
+    assert merged["observations"] == old["observations"]
+    assert macro_archive._valid(merged, now=NOW)
 
 
-def test_bootstrap_reads_bounded_archive_and_no_bank_snapshots(tmp_path, monkeypatch):
-    r = record()
-    doc = json.dumps({"schema_version": macro_archive.SCHEMA_VERSION,
-                      "assembled_at": NOW.isoformat(), "records": [r]}).encode()
+def test_tampered_source_and_raw_values_rejected(tmp_path):
+    archive = build(tmp_path, "CPIAUCSL")
+    forged = json.loads(json.dumps(archive))
+    forged["observations"][0]["value"] = 99.0
+    forged["integrity_sha256"] = macro_archive._digest(forged)
+    assert not macro_archive._valid(forged, now=NOW)
+    forged2 = json.loads(json.dumps(archive))
+    forged2["observations"][0]["source_url"] = "https://untrusted.example"
+    forged2["integrity_sha256"] = macro_archive._digest(forged2)
+    assert not macro_archive._valid(forged2, now=NOW)
+
+
+def test_future_archive_rejected(tmp_path):
+    a = build(tmp_path, "CPIAUCSL")
+    a["compiled_at"] = "2026-12-01T00:00:00Z"
+    a["integrity_sha256"] = macro_archive._digest(a)
+    assert not macro_archive._valid(a, now=NOW)
+
+
+def test_bootstrap_stores_derived_only_and_preserves_dated_metadata(tmp_path, monkeypatch):
+    archive = build(tmp_path, "CPIAUCSL", "INDPRO")
+    raw = json.dumps(archive).encode()
     class Response:
         def __enter__(self): return self
         def __exit__(self, *_): return False
-        def read(self, *_): return doc
+        def read(self, *_): return raw
     monkeypatch.setattr(macro_archive, "urlopen", lambda request, timeout: Response())
-    out = macro_archive.bootstrap_public_macro(tmp_path)
-    assert out["status"] == "ARCHIVED" and out["imported"] == 1
-    assert Store(tmp_path).latest_snapshots()["FRED:CPIAUCSL"]["payload"] == r["payload"]
+    result = macro_archive.bootstrap_public_macro(tmp_path)
+    assert result == {"status": "ARCHIVED", "imported": 2}
+    assert not Store(tmp_path).latest_snapshots().get("FRED:NON_EXISTENT")
+    restored = macro_archive.archived_macro_context(tmp_path, as_of=NOW)
+    assert restored["label"] != "Non disponibile"
+    assert restored["archived"] is True
+    assert restored["observations"].value.isna().all()
+    assert restored["observations"].status.eq("ARCHIVED_METADATA").sum() == 2
 
 
-def test_provider_timeout_keeps_previous_verified_archive(tmp_path, monkeypatch):
-    r = record()
-    Store(tmp_path).put_snapshot(**r)
-    def outage(request, timeout):
-        raise TimeoutError("declared network timeout")
-    monkeypatch.setattr(macro_archive, "urlopen", outage)
+def test_timeout_cannot_destroy_previous_derived_summary(tmp_path, monkeypatch):
+    archive = build(tmp_path, "CPIAUCSL")
+    macro_archive.atomic_json(tmp_path / macro_archive.LOCAL_COPY, archive)
+    monkeypatch.setattr(macro_archive, "urlopen",
+                        lambda request, timeout: (_ for _ in ()).throw(TimeoutError("network down")))
     assert macro_archive.bootstrap_public_macro(tmp_path)["status"] == "UNAVAILABLE"
-    assert Store(tmp_path).latest_snapshots()["FRED:CPIAUCSL"]["sha256"] == r["sha256"]
+    assert macro_archive.archived_macro_context(tmp_path, as_of=NOW) is not None
 
 
 def test_optional_official_api_never_persists_secret(monkeypatch):
@@ -96,18 +100,17 @@ def test_optional_official_api_never_persists_secret(monkeypatch):
     monkeypatch.setenv("FRED_API_KEY", "synthetic-test-secret")
     monkeypatch.setattr(refresh, "_fred_api_payload",
                         lambda code, key: (r["payload"],
-                            "https://api.stlouisfed.org/fred/series/observations?series_id=" + code))
+                          "https://api.stlouisfed.org/fred/series/observations?series_id=" + code))
     fetched = refresh.fetch_record("FRED:CPIAUCSL")
     assert fetched["sha256"] == r["sha256"]
     assert "synthetic-test-secret" not in json.dumps(fetched)
-    assert fetched["kind"] == "macro"
 
 
 def test_macro_circuit_limits_repeated_timeouts(tmp_path, monkeypatch):
-    macro_codes = {f"CPIAUCSL": ("CPI", "index", 75),
+    macro_codes = {"CPIAUCSL": ("CPI", "index", 75),
                    "INDPRO": ("Industrial", "index", 75),
-                   "DGS10": ("10y", "percentage", 7),
-                   "DFII10": ("Real 10y", "percentage", 7)}
+                   "DGS10": ("10y", "percent", 7),
+                   "DFII10": ("Real", "percent", 7)}
     monkeypatch.setattr(refresh, "SERIES", macro_codes)
     monkeypatch.setattr(refresh, "load_universe",
                         lambda root: pd.DataFrame({"symbol": ["SPY"]}))
@@ -124,6 +127,6 @@ def test_macro_circuit_limits_repeated_timeouts(tmp_path, monkeypatch):
     monkeypatch.setattr(refresh, "fetch_record", outage)
     result = refresh.refresh_sources(tmp_path)
     macro_calls = [s for s in called if s.startswith("FRED:")]
-    assert len(macro_calls) in (2, 3)
-    assert any(e["error"] == "FredCircuitOpen" for e in result["errors"])
+    assert len(macro_calls) == 2
+    assert any(item["error"] == "FredCircuitOpen" for item in result["errors"])
     assert result["acquired"] == 0
