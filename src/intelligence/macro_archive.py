@@ -10,13 +10,14 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
+import tempfile
 from pathlib import Path
 from urllib.request import Request, urlopen
 
 import pandas as pd
 
 from .macro import SERIES, macro_context
-from .report_export import atomic_json
 from .store import Store
 
 SCHEMA_VERSION = "macro-research-summary.v1"
@@ -26,6 +27,27 @@ ARCHIVE_URL = (
     "exports/research/macro_latest.json"
 )
 LOCAL_COPY = Path("data/processed/macro_published_summary.json")
+
+
+def atomic_json(path, document):
+    """Write a validated small derived-only record without partial replacements."""
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temp = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8",
+                                         dir=target.parent, suffix=".tmp",
+                                         delete=False) as handle:
+            temp = Path(handle.name)
+            json.dump(document, handle, ensure_ascii=False, sort_keys=True,
+                      allow_nan=False, indent=2)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        temp.replace(target)
+    finally:
+        if temp is not None:
+            temp.unlink(missing_ok=True)
 
 
 def _utc(value):
