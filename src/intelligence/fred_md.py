@@ -98,9 +98,16 @@ def fetch_fred_md(*, now=None, open_url=None):
                 raise ValueError("Official FRED-MD CSV oversized")
             result = parse_fred_md(payload_bytes.decode("utf-8-sig"), acquired_at=now,
                                    source_url=url)
-            if all(symbol in result for symbol in ("FRED:CPIAUCSL", "FRED:INDPRO")):
-                return result
-            raise ValueError("Monthly source missing CPI/INDPRO requirements")
+            if not all(symbol in result for symbol in ("FRED:CPIAUCSL", "FRED:INDPRO")):
+                raise ValueError("Monthly source missing CPI/INDPRO requirements")
+            evaluated=datetime.fromisoformat(now.replace("Z","+00:00"))
+            for record in result.values():
+                last_day=date.fromisoformat(record["payload"].splitlines()[-1].split(",")[0])
+                age=(evaluated.date()-last_day).days
+                if not 0<=age<=75:
+                    raise ValueError("FRED-MD published series is stale: "
+                                     +record["symbol"]+" observed "+last_day.isoformat())
+            return result
         except (OSError, UnicodeError, ValueError) as exc:
             failures.append(type(exc).__name__)
     raise ConnectionError("Official FRED-MD URLs unavailable or invalid: " + ",".join(failures))
