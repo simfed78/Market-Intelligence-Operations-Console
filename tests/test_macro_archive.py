@@ -125,6 +125,7 @@ def test_macro_circuit_limits_repeated_timeouts(tmp_path, monkeypatch):
         called.append(symbol)
         raise TimeoutError("declared provider timeout")
     monkeypatch.setattr(refresh, "fetch_record", outage)
+    monkeypatch.setattr(refresh, "fetch_fred_md", lambda: (_ for _ in ()).throw(TimeoutError("source unavailable")))
     result = refresh.refresh_sources(tmp_path)
     macro_calls = [s for s in called if s.startswith("FRED:")]
     assert len(macro_calls) == 2
