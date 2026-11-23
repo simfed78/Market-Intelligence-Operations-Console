@@ -107,10 +107,10 @@ def evaluate_history(symbol, bars, meta, *, as_of, fee_bps=10.0):
         return _abstain(symbol, "FUTURE_BAR", "Use closed, prior-session bars only")
     if (stamp.date() - f["date"].iloc[-1].date()).days > 5:
         return _abstain(symbol, "STALE_BARS", "Historical data is no longer current")
-    if len(f) < WARMUP + TRAIN + MIN_FOLDS * (TEST + EMBARGO):
+    if len(f) < WARMUP + TRAIN + MIN_FOLDS * (TEST + EMBARGO) + 1:
         return _abstain(symbol, "INSUFFICIENT_HISTORY",
-                        "Need at least 502 daily sessions for four independent test folds",
-                        bars=len(f), min_bars=WARMUP + TRAIN + MIN_FOLDS * (TEST + EMBARGO))
+                        "Need at least 503 daily sessions for four independent test folds",
+                        bars=len(f), min_bars=WARMUP + TRAIN + MIN_FOLDS * (TEST + EMBARGO) + 1)
     adjusted_close = numeric["adj_close"]
     adjusted_open = numeric["open"] * adjusted_close / numeric["close"]
     next_open_return = adjusted_open.shift(-1) / adjusted_open - 1
@@ -195,7 +195,8 @@ def evaluate_history(symbol, bars, meta, *, as_of, fee_bps=10.0):
         ],
         "research_fingerprint": hashlib.sha256(
             (VERSION + "|" + symbol + "|" + str(f["date"].iloc[-1].date())
-             + "|" + str(len(f)) + "|" + str(fee_bps)).encode()).hexdigest()[:16],
+             + "|" + str(len(f)) + "|" + str(fee_bps) + "|"
+             + hashlib.sha256(adjusted_close.to_numpy(dtype='float64').tobytes()).hexdigest()).encode()).hexdigest()[:16],
     }
 
 
