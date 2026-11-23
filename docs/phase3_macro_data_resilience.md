@@ -20,18 +20,22 @@ dates, instead of treating every remote request as a mandatory live feed.
    metrics or diagnostic text.
 3. Provider data is strictly validated: official origin, series ID, CSV schema,
    retrieval timestamp, content hash, numeric observations and publication age.
-   Only actual FRED responses are archived. The versioned public artifact is
+   The producer computes a **derived-only** macro regime and publishes source
+   identifiers, observed dates, acquisition times, input hashes and official
+   links. It does **not** redistribute raw histories or proprietary
+   ICE BofA numerical observations. The versioned public artifact is
    `research-data:exports/research/macro_latest.json`.
-4. The archive publisher merges newly qualified observations into the previous
-   archive. A timeout or partially successful refresh cannot delete a
-   previously verified series. A later-retrieved observation is used only when
-   the observation period is at least as recent.
-5. Streamlit Cloud loads the last published archive into its local read-only
-   research snapshot database and refreshes only market quotations. **It never
-   requests FRED live**. When the archive is unreachable, local previously
-   stored snapshots remain intact; otherwise macro is DATA UNAVAILABLE.
-   Public hosting remains strictly `RESEARCH_ONLY` and imported records
-   are **never** portfolio/broker data.
+4. The archive publisher merges newly verified **metadata** into the
+   previous derived report. A timeout or partially successful refresh cannot
+   delete the previous qualified source date. A later-retrieved observation
+   is used only when the observation period is at least as recent.
+5. Streamlit Cloud loads the last published **derived-only** archive into
+   ephemeral local research storage and refreshes only market quotations.
+   **It never requests FRED live**. When the archive is unreachable, previously
+   verified local derived context remains intact; otherwise macro is
+   DATA UNAVAILABLE. The macro view links to the official FRED time-series
+   page for complete history instead of republishing the numeric series.
+   Public hosting remains strictly `RESEARCH_ONLY`.
 6. Each macro observation displays source, observed period, acquisition
    timestamp, release/vintage limitation and per-series staleness. A revived
    network connection cannot retroactively certify publication vintages.
@@ -73,3 +77,14 @@ verified official FRED CSV records can also enter through the existing
 - Load Streamlit and verify the Macro panel distinguishes historical data,
   provider timeouts, observed period and acquired timestamp.
 - No trading orders, real-account integration, or unqualified macro scores.
+
+## Public redistribution boundary
+
+FRED serves datasets from different copyright holders. In particular, the
+ICE BofA IG/HY spread series are identified as copyrighted and require an
+independent rights check before republication. This repository publishes
+**no raw FRED CSV/JSON or ICE BofA values**, only derived regime commentary
+from government macro inputs and provenance/freshness metadata. The
+`input_sha256` hashes are provenance references, not data authentication
+or a guarantee of historical publication vintages. For the full series
+history use FRED's official series pages and applicable license permissions.
