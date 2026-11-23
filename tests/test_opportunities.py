@@ -117,6 +117,8 @@ def test_failed_refresh_keeps_snapshots_without_synthetic_fallback(tmp_path,monk
     monkeypatch.setenv('TRADING_DESK_PUBLIC','1')
     monkeypatch.setattr(refresh,'fetch_record',lambda symbol:(_ for _ in ()).throw(OSError('declared offline test')))
     monkeypatch.setattr(refresh,'fetch_fred_md',lambda:(_ for _ in ()).throw(OSError('declared offline test')))
+    monkeypatch.setattr(refresh,'fetch_bls_cpi',lambda:(_ for _ in ()).throw(OSError('declared offline test')))
+    monkeypatch.setattr(refresh,'fetch_frb_indpro',lambda:(_ for _ in ()).throw(OSError('declared offline test')))
     result=refresh.refresh_sources(tmp_path)
     assert result['acquired']==0 and len(result['errors'])==153
     assert result['market_quality']=={'MISSING':145}
