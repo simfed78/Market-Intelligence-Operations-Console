@@ -22,6 +22,7 @@ from .market import chart_url, utc_now, normalize
 from .store import Store
 from .universe import load_universe
 from .macro import SERIES, macro_context
+from .fred_md import MONTHLY, OFFICIAL_URLS, fetch_fred_md
 from .service import load_dashboard
 from .analytics import clean_records
 from .opportunities import HORIZONS, rank_opportunities
@@ -87,9 +88,17 @@ def import_record(store, record, allowed):
     if symbol not in allowed:
         raise ValueError('Snapshot fuori universo')
     kind='macro' if symbol.startswith('FRED:') else 'market'
-    source='FRED' if kind=='macro' else 'Yahoo Finance'
-    if record.get('kind')!=kind or record.get('source')!=source:
+    source='Yahoo Finance' if kind=='market' else record.get('source')
+    if record.get('kind') != kind:
         raise ValueError('Fonte/tipo non ammessi')
+    if kind == 'market' and source != 'Yahoo Finance':
+        raise ValueError('Fonte azionaria non ammessa')
+    if kind == 'macro':
+        if source not in ('FRED','FRED-MD'):
+            raise ValueError('Origine macro non ammessa')
+        if source == 'FRED-MD' and (symbol[5:] not in MONTHLY
+                or record.get('source_url') not in OFFICIAL_URLS):
+            raise ValueError('FRED-MD: provenienza e serie non consentite')
     if hashlib.sha256(record['payload'].encode()).hexdigest()!=record['sha256']:
         raise ValueError('Hash non corrispondente')
     if kind=='market':
@@ -141,7 +150,7 @@ def cache_usable(record, now):
         if hashlib.sha256(record['payload'].encode()).hexdigest()!=record['sha256']:return False
         if record['kind']=='market':
             return age<=6*3600 and normalize(record,record['symbol'],as_of=now.isoformat())[1]['price_status']=='VALID'
-        if record['kind']!='macro' or record['source']!='FRED' or age>MACRO_CACHE_HOURS*3600:
+        if record['kind']!='macro' or record['source'] not in ('FRED','FRED-MD') or age>MACRO_CACHE_HOURS*3600:
             return False
         observations=macro_context({record['symbol']:record},as_of=now.isoformat())['observations']
         selected=observations[observations.series.eq(record['symbol'].removeprefix('FRED:'))]
@@ -208,6 +217,17 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
         # FRED calls are sequential so the fail-fast circuit can stop a provider outage.
         for group, workers in (([s for s in pending if not s.startswith("FRED:")],3),
                                ([s for s in pending if s.startswith("FRED:")],1)):
+            if workers == 1 and any(s.removeprefix("FRED:") in MONTHLY for s in group):
+                try:
+                    monthly = fetch_fred_md()
+                    for symbol in list(group):
+                        if symbol in monthly:
+                            import_record(store, monthly[symbol], allowed)
+                            success.append(symbol)
+                            report(symbol)
+                            group.remove(symbol)
+                except Exception as exc:
+                    errors.append(source_error("FRED-MD", exc))
             with ThreadPoolExecutor(max_workers=workers) as pool:
                 futures={pool.submit(fetch_paced,symbol):symbol for symbol in group}
                 for future in as_completed(futures):
