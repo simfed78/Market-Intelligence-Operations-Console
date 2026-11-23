@@ -27,10 +27,11 @@ dates, instead of treating every remote request as a mandatory live feed.
    previously verified series. A later-retrieved observation is used only when
    the observation period is at least as recent.
 5. Streamlit Cloud loads the last published archive into its local read-only
-   research snapshot database **before** attempting any fresh network data.
-   If the archive itself is unreachable, local previously stored snapshots
-   remain intact. Public hosting remains strictly `RESEARCH_ONLY` and the
-   imported records are **never** portfolio/broker data.
+   research snapshot database and refreshes only market quotations. **It never
+   requests FRED live**. When the archive is unreachable, local previously
+   stored snapshots remain intact; otherwise macro is DATA UNAVAILABLE.
+   Public hosting remains strictly `RESEARCH_ONLY` and imported records
+   are **never** portfolio/broker data.
 6. Each macro observation displays source, observed period, acquisition
    timestamp, release/vintage limitation and per-series staleness. A revived
    network connection cannot retroactively certify publication vintages.
