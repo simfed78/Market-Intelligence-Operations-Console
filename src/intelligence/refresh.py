@@ -191,6 +191,15 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
                     next_request[0]=time.monotonic()+request_interval
             if budget_seconds is not None and time.monotonic()-network_started>=budget_seconds:
                 raise TimeoutError('Tempo massimo aggiornamento raggiunto; fonte non richiesta in questo run')
+            if symbol.startswith("FRED:"):
+                # Update the circuit inside the single FRED worker, *before*
+                # its next queued request starts (no main-thread race).
+                try:
+                    return fetch_record(symbol)
+                except Exception as exc:
+                    if _fred_connectivity_failure(exc):
+                        fred_failures[0] += 1
+                    raise
             return fetch_record(symbol)
 
         # Market quotations first; optional macro requests cannot starve 145 assets.
@@ -206,8 +215,6 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
                         import_record(store,record,allowed)
                         success.append(symbol)
                     except Exception as exc:
-                        if symbol.startswith("FRED:") and _fred_connectivity_failure(exc):
-                            fred_failures[0] += 1
                         errors.append(source_error(symbol,exc))
                     report(symbol)
     data=load_dashboard(root,include_unpublished=True)
