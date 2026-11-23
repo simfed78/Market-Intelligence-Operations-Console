@@ -5,6 +5,10 @@ python -m src.intelligence.refresh --root . --import-inbox data/intelligence_inb
 """
 from pathlib import Path
 import argparse
+import csv
+import os
+from io import StringIO
+from urllib.parse import urlencode
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
@@ -21,6 +25,61 @@ from .macro import SERIES, macro_context
 from .service import load_dashboard
 from .analytics import clean_records
 from .opportunities import HORIZONS, rank_opportunities
+
+FRED_TIMEOUT_SECONDS = 8
+FRED_API_TIMEOUT_SECONDS = 12
+FRED_CIRCUIT_FAILURES = 2
+# FRED is published at daily/monthly/weekly cadence, unlike price bars.
+MACRO_CACHE_HOURS = 26
+
+
+class FredCircuitOpen(RuntimeError):
+    """Skip further public FRED requests after repeated connectivity failures."""
+
+
+def _fred_api_payload(code, key):
+    """Optional official FRED API JSON -> original two-column CSV snapshot contract."""
+    params = urlencode({"series_id": code, "observation_start": "2023-01-01",
+                        "file_type": "json", "api_key": key})
+    req = Request("https://api.stlouisfed.org/fred/series/observations?" + params,
+                  headers={"User-Agent": "TradingDesk-Research/1.0"})
+    with urlopen(req, timeout=FRED_API_TIMEOUT_SECONDS) as response:
+        data = json.loads(response.read().decode("utf-8"))
+    rows = data.get("observations") if isinstance(data, dict) else None
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("Official FRED API returned no observations")
+    buffer = StringIO()
+    writer = csv.writer(buffer, lineterminator="\n")
+    writer.writerow(["observation_date", code])
+    valid = 0
+    for item in rows:
+        if not isinstance(item, dict):
+            raise ValueError("Invalid FRED response item")
+        date, value = item.get("date"), item.get("value")
+        if not isinstance(date, str) or not isinstance(value, str):
+            raise ValueError("Invalid FRED observation")
+        if value != ".":
+            try:
+                number = float(value)
+            except ValueError as exc:
+                raise ValueError("Invalid FRED numeric value") from exc
+            if not -float("inf") < number < float("inf"):
+                raise ValueError("Nonfinite FRED numeric value")
+            valid += 1
+        writer.writerow([date, value])
+    if not valid:
+        raise ValueError("No numeric observations in FRED response")
+    # Never persist or display a URL containing the API key.
+    safe_url = ("https://api.stlouisfed.org/fred/series/observations?"
+                + urlencode({"series_id": code, "observation_start": "2023-01-01",
+                             "file_type": "json"}))
+    return buffer.getvalue(), safe_url
+
+
+def _fred_connectivity_failure(exc):
+    return isinstance(exc, (TimeoutError, URLError)) or (
+        isinstance(exc, HTTPError) and exc.code in (429, 502, 503, 504)
+    )
 
 
 def import_record(store, record, allowed):
@@ -43,14 +102,24 @@ def import_record(store, record, allowed):
 
 
 def fetch_record(symbol):
-    macro=symbol.startswith('FRED:')
-    url=(f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={symbol[5:]}&cosd=2023-01-01' if macro else chart_url(symbol))
-    req=Request(url,headers={'User-Agent':'Mozilla/5.0 (MultiAssetResearch/1.0)'})
-    with urlopen(req,timeout=20) as response:
-        payload=response.read().decode('utf-8')
-    return dict(symbol=symbol,retrieved_at=utc_now(),source='FRED' if macro else 'Yahoo Finance',
-                source_url=url,kind='macro' if macro else 'market',
-                sha256=hashlib.sha256(payload.encode()).hexdigest(),payload=payload)
+    macro = symbol.startswith('FRED:')
+    code = symbol.removeprefix('FRED:') if macro else None
+    # API key is optional for scheduled ingestion; not required by Streamlit.
+    key = os.getenv("FRED_API_KEY", "").strip() if macro else ""
+    if macro and key:
+        payload, url = _fred_api_payload(code, key)
+    else:
+        url = (f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={code}&cosd=2023-01-01'
+               if macro else chart_url(symbol))
+        req = Request(url, headers={'User-Agent': 'Mozilla/5.0 (MultiAssetResearch/1.0)'})
+        with urlopen(req, timeout=FRED_TIMEOUT_SECONDS if macro else 20) as response:
+            payload = response.read().decode('utf-8')
+    if macro and not payload.startswith(f"observation_date,{code}\n"):
+        raise ValueError("FRED response does not match its series CSV schema")
+    return dict(symbol=symbol, retrieved_at=utc_now(),
+                source='FRED' if macro else 'Yahoo Finance',
+                source_url=url, kind='macro' if macro else 'market',
+                sha256=hashlib.sha256(payload.encode()).hexdigest(), payload=payload)
 
 
 def source_error(symbol, exc):
@@ -68,19 +137,23 @@ def source_error(symbol, exc):
 def cache_usable(record, now):
     try:
         age=(now-datetime.fromisoformat(record['retrieved_at'].replace('Z','+00:00'))).total_seconds()
-        if age<0 or age>6*3600:return False
+        if age<0:return False
         if hashlib.sha256(record['payload'].encode()).hexdigest()!=record['sha256']:return False
-        if record['kind']=='market':return normalize(record,record['symbol'],as_of=now.isoformat())[1]['price_status']=='VALID'
-        if record['kind']!='macro' or record['source']!='FRED':return False
+        if record['kind']=='market':
+            return age<=6*3600 and normalize(record,record['symbol'],as_of=now.isoformat())[1]['price_status']=='VALID'
+        if record['kind']!='macro' or record['source']!='FRED' or age>MACRO_CACHE_HOURS*3600:
+            return False
         observations=macro_context({record['symbol']:record},as_of=now.isoformat())['observations']
         selected=observations[observations.series.eq(record['symbol'].removeprefix('FRED:'))]
         return bool(not selected.empty and selected.value.notna().all() and selected.stale.eq(False).all())
     except (KeyError,ValueError,TypeError):return False
 
 
-def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use_cached=False, request_interval=0, budget_seconds=None):
+def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use_cached=False, request_interval=0, budget_seconds=None, refresh_macro=True):
     root=Path(root).resolve();store=Store(root)
-    allowed=set(load_universe(root).symbol)|{'FRED:'+s for s in SERIES}
+    allowed=set(load_universe(root).symbol)
+    if refresh_macro:
+        allowed |= {'FRED:'+s for s in SERIES}
     run_at=utc_now(); errors=[]; success=[]; cached=[]
     done=0;total=len(allowed)
     def report(symbol):
@@ -103,8 +176,14 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
             if symbol in snapshots and cache_usable(snapshots[symbol],now):
                 cached.append(symbol);report(symbol)
             else:pending.append(symbol)
-        throttle=Lock();next_request=[0.0];network_started=time.monotonic()
+        throttle = Lock()
+        next_request = [0.0]
+        network_started = time.monotonic()
+        fred_failures = [0]
+
         def fetch_paced(symbol):
+            if (symbol.startswith("FRED:") and fred_failures[0] >= FRED_CIRCUIT_FAILURES):
+                raise FredCircuitOpen("FRED temporaneamente non disponibile; uso ultimo snapshot verificato.")
             if budget_seconds is not None and time.monotonic()-network_started>=budget_seconds:
                 raise TimeoutError('Tempo massimo aggiornamento raggiunto; fonte non richiesta in questo run')
             if request_interval:
@@ -114,16 +193,32 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
                     next_request[0]=time.monotonic()+request_interval
             if budget_seconds is not None and time.monotonic()-network_started>=budget_seconds:
                 raise TimeoutError('Tempo massimo aggiornamento raggiunto; fonte non richiesta in questo run')
-            return fetch_record(symbol)
-        with ThreadPoolExecutor(max_workers=3) as pool:
-            futures={pool.submit(fetch_paced,s):s for s in pending}
-            for future in as_completed(futures):
-                symbol=futures[future]
+            if symbol.startswith("FRED:"):
+                # Update the circuit inside the single FRED worker, *before*
+                # its next queued request starts (no main-thread race).
                 try:
-                    import_record(store,future.result(),allowed);success.append(symbol)
+                    return fetch_record(symbol)
                 except Exception as exc:
-                    errors.append(source_error(symbol,exc))
-                report(symbol)
+                    if _fred_connectivity_failure(exc):
+                        fred_failures[0] += 1
+                    raise
+            return fetch_record(symbol)
+
+        # Market quotations first; optional macro requests cannot starve 145 assets.
+        # FRED calls are sequential so the fail-fast circuit can stop a provider outage.
+        for group, workers in (([s for s in pending if not s.startswith("FRED:")],3),
+                               ([s for s in pending if s.startswith("FRED:")],1)):
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futures={pool.submit(fetch_paced,symbol):symbol for symbol in group}
+                for future in as_completed(futures):
+                    symbol=futures[future]
+                    try:
+                        record=future.result()
+                        import_record(store,record,allowed)
+                        success.append(symbol)
+                    except Exception as exc:
+                        errors.append(source_error(symbol,exc))
+                    report(symbol)
     data=load_dashboard(root,include_unpublished=True)
     counts=data['metrics'].price_status.value_counts().to_dict()
     summary=dict(mode='RESEARCH_ONLY',requested=len(allowed),acquired=len(success),cached=len(cached),errors=errors,

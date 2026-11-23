@@ -9,6 +9,7 @@ from .store import Store
 from .market import normalize, utc_now
 from .analytics import asset_metrics
 from .macro import macro_context
+from .macro_archive import archived_macro_context
 from .core_monitor import read_core
 from .opportunities import decorate_metrics, rank_opportunities, HORIZONS
 
@@ -52,6 +53,12 @@ def load_dashboard(root: Path, as_of=None, *, include_unpublished=False):
         except (OSError,sqlite3.DatabaseError):
             prior={}
         ranked[horizon]=rank_opportunities(enriched,horizon,prior)
+    macro=macro_context(snapshots,now)
+    if public_mode and as_of is None and macro.get('status')=='MISSING':
+        # Derived-only published context: no raw FRED data in public GitHub.
+        archived=archived_macro_context(root,as_of=now)
+        if archived is not None:
+            macro=archived
     return dict(universe=universe,metrics=enriched,histories=histories,opportunities=ranked,public_mode=public_mode,
-                macro=macro_context(snapshots,now),core=core,latest_run=latest,
+                macro=macro,core=core,latest_run=latest,
                 errors=read_errors+(latest.get('errors',[]) if latest else []))

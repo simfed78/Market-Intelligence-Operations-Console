@@ -547,6 +547,16 @@ def _macro(data: dict, filtered: pd.DataFrame) -> None:
     st.markdown(f"**{macro.get('label', 'Non disponibile')}** · `{macro.get('status', 'MISSING')}`")
     st.write(str(macro.get("reason", "La classificazione richiede osservazioni macro verificabili e date di disponibilità.")))
     observations = _frame(macro.get("observations"))
+    if not observations.empty:
+        known=int(observations.get("value",pd.Series(dtype=float)).notna().sum())
+        stale=int(observations.get("stale",pd.Series(dtype=bool)).eq(True).sum())
+        archived=int(observations.get("status",pd.Series(dtype=str)).eq("ARCHIVED_METADATA").sum())
+        st.caption(f"Serie numeriche nel contesto privato: {known}/{len(observations)}; "
+                   f"riferimenti verificati nell'archivio pubblico: {archived}; "
+                   f"oltre soglia di freschezza: {stale}. "
+                   "L'archivio pubblico contiene solo indicatori derivati e metadati: "
+                   "apri la fonte ufficiale per i valori e la serie storica completa. "
+                   "Observed = periodo economico; acquired = data di acquisizione.")
     _table(observations, key="macro_observations")
     st.subheader("Azioni e obbligazioni")
     candidates = [s for s in ["SPY", "IEF", "TLT", "LQD", "HYG", "TIP"] if s in filtered.get("symbol", pd.Series(dtype=str)).values]
@@ -646,6 +656,16 @@ def main() -> None:
     if errors:
         valid=int(metrics.get('price_status',pd.Series(dtype=str)).eq('VALID').sum())
         st.caption(f"Copertura incompleta: {valid}/{len(metrics)} prezzi validi. Alcune fonti non sono state aggiornate.")
+        macro_failures=[item for item in errors if str(item.get('symbol','')).startswith('FRED:')]
+        if macro_failures:
+            macro_observations=_frame((data.get('macro') or {}).get('observations'))
+            stored=int(macro_observations.get('value',pd.Series(dtype=float)).notna().sum())
+            if stored:
+                st.caption(f"FRED: {len(macro_failures)} richieste fallite, ma {stored}/8 serie "
+                           "sono conservate con le rispettive date. Controlla STALE e osservazione nel pannello Macro.")
+            else:
+                st.caption(f"FRED: {len(macro_failures)} richieste fallite; nessuno snapshot macro "
+                           "qualificato disponibile. Il motore Macro si astiene.")
         with st.expander('Stato delle fonti'):
             st.dataframe(pd.DataFrame(errors),hide_index=True,width='stretch')
         if not valid and public_status(PROJECT_ROOT).get('status')!='RUNNING':

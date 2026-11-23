@@ -17,10 +17,13 @@ from src.intelligence.store import Store
 def test_duplicate_start_is_running_not_outage(tmp_path,monkeypatch):
     started=Event();release=Event();calls=[]
     def refresh(root,**kw):
+        assert kw.get('refresh_macro') is False  # hosted never calls live FRED
         calls.append(root);kw['progress']({'completed':44,'total':153})
         started.set();assert release.wait(2)
         return {'acquired':44,'cached':0,'errors':[]}
     monkeypatch.setattr(hosted,'refresh_sources',refresh)
+    monkeypatch.setattr(hosted,'bootstrap_public_macro',
+                        lambda root: {'status':'UNAVAILABLE','imported':0})
     try:
         first=hosted.start_public_refresh(tmp_path)
         assert started.wait(1)
@@ -38,6 +41,8 @@ def test_failure_is_diagnostic_and_not_retried_by_render(tmp_path,monkeypatch):
     calls=[]
     def bad(root,**kwargs):calls.append(root);raise OSError('declared test failure')
     monkeypatch.setattr(hosted,'refresh_sources',bad)
+    monkeypatch.setattr(hosted,'bootstrap_public_macro',
+                        lambda root: {'status':'UNAVAILABLE','imported':0})
     result=hosted.refresh_public(tmp_path)
     assert result['errors'][0]['error']=='OSError'
     state=hosted.start_public_refresh(tmp_path)
@@ -63,13 +68,16 @@ def test_cold_start_never_exposes_unpublished_partial_data(tmp_path,monkeypatch)
     assert result['opportunities']['3m'].signal_state.eq('BLOCKED').all()
 
 
-def test_macro_cache_requires_original_hash_and_six_hour_freshness():
+def test_macro_cache_has_independent_release_aware_freshness():
     now=datetime(2026,11,7,12,tzinfo=timezone.utc)
     payload='observation_date,CPIAUCSL\n2026-08-01,99\n2026-09-01,100\n'
     r=dict(kind='macro',source='FRED',symbol='FRED:CPIAUCSL',retrieved_at='2026-11-07T10:00:00Z',payload=payload,sha256=hashlib.sha256(payload.encode()).hexdigest())
     assert cache_usable(r,now)
     assert not cache_usable({**r,'sha256':'broken'},now)
-    assert not cache_usable({**r,'retrieved_at':'2026-11-07T01:00:00Z'},now)
+    # Macro publications are daily/weekly/monthly: the last verified observation
+    # remains usable for 26h. A live provider connection is not mandatory.
+    assert cache_usable({**r,'retrieved_at':'2026-11-07T01:00:00Z'},now)
+    assert not cache_usable({**r,'retrieved_at':'2026-11-06T08:00:00Z'},now)
 
 
 def test_exhausted_public_budget_does_not_start_more_network_requests(tmp_path,monkeypatch):

@@ -4,6 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from uuid import uuid4
 from .refresh import refresh_sources, source_error
+from .macro_archive import bootstrap_public_macro
 
 _LOCK=Lock()
 _STATE_LOCK=Lock()
@@ -22,7 +23,11 @@ def _progress(update):
 
 def _work(root):
     try:
-        result=refresh_sources(root,use_cached=True,request_interval=.35,budget_seconds=120,progress=_progress)
+        # Recover the last verified published FRED observations first. An outage
+        # must not erase existing macro data or block the market refresh.
+        archive = bootstrap_public_macro(root)
+        result=refresh_sources(root,use_cached=True,request_interval=.35,budget_seconds=120,progress=_progress,refresh_macro=False)
+        result['macro_archive'] = archive
         _progress({'status':'COMPLETE','result':result})
         return result
     except Exception as exc:
