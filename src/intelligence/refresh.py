@@ -23,6 +23,7 @@ from .store import Store
 from .universe import load_universe
 from .macro import SERIES, macro_context
 from .fred_md import MONTHLY, OFFICIAL_URLS, fetch_fred_md
+from .official_macro import OFFICIAL_SOURCES, fetch_bls_cpi, fetch_frb_indpro
 from .service import load_dashboard
 from .analytics import clean_records
 from .opportunities import HORIZONS, rank_opportunities
@@ -94,11 +95,14 @@ def import_record(store, record, allowed):
     if kind == 'market' and source != 'Yahoo Finance':
         raise ValueError('Fonte azionaria non ammessa')
     if kind == 'macro':
-        if source not in ('FRED','FRED-MD'):
+        if source not in ('FRED','FRED-MD','BLS','FRB-G17'):
             raise ValueError('Origine macro non ammessa')
         if source == 'FRED-MD' and (symbol[5:] not in MONTHLY
                 or record.get('source_url') not in OFFICIAL_URLS):
             raise ValueError('FRED-MD: provenienza e serie non consentite')
+        if source in ('BLS','FRB-G17'):
+            if OFFICIAL_SOURCES.get(symbol[5:]) != (source, record.get('source_url')):
+                raise ValueError('Fonte macro primaria: codice o URL non consentito')
     if hashlib.sha256(record['payload'].encode()).hexdigest()!=record['sha256']:
         raise ValueError('Hash non corrispondente')
     if kind=='market':
@@ -150,7 +154,7 @@ def cache_usable(record, now):
         if hashlib.sha256(record['payload'].encode()).hexdigest()!=record['sha256']:return False
         if record['kind']=='market':
             return age<=6*3600 and normalize(record,record['symbol'],as_of=now.isoformat())[1]['price_status']=='VALID'
-        if record['kind']!='macro' or record['source'] not in ('FRED','FRED-MD') or age>MACRO_CACHE_HOURS*3600:
+        if record['kind']!='macro' or record['source'] not in ('FRED','FRED-MD','BLS','FRB-G17') or age>MACRO_CACHE_HOURS*3600:
             return False
         observations=macro_context({record['symbol']:record},as_of=now.isoformat())['observations']
         selected=observations[observations.series.eq(record['symbol'].removeprefix('FRED:'))]
@@ -163,7 +167,7 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
     allowed=set(load_universe(root).symbol)
     if refresh_macro:
         allowed |= {'FRED:'+s for s in SERIES}
-    run_at=utc_now(); errors=[]; success=[]; cached=[]; fred_md_issue=None
+    run_at=utc_now(); errors=[]; success=[]; cached=[]; fred_md_issue=None; official_issues=[]
     done=0;total=len(allowed)
     def report(symbol):
         nonlocal done
@@ -217,6 +221,19 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
         # FRED calls are sequential so the fail-fast circuit can stop a provider outage.
         for group, workers in (([s for s in pending if not s.startswith("FRED:")],3),
                                ([s for s in pending if s.startswith("FRED:")],1)):
+            if workers == 1 and (budget_seconds is None or time.monotonic()-network_started < budget_seconds):
+                for target, fetcher in (("FRED:CPIAUCSL",fetch_bls_cpi),
+                                        ("FRED:INDPRO",fetch_frb_indpro)):
+                    if target not in group:
+                        continue
+                    try:
+                        official = fetcher()
+                        import_record(store,official,allowed)
+                        success.append(target)
+                        group.remove(target)
+                        report(target)
+                    except Exception as exc:
+                        official_issues.append(source_error(target+"-primary",exc))
             if (workers == 1 and any(s.removeprefix("FRED:") in MONTHLY for s in group)
                     and (budget_seconds is None or time.monotonic()-network_started < budget_seconds)):
                 try:
@@ -246,7 +263,7 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
     counts=data['metrics'].price_status.value_counts().to_dict()
     summary=dict(mode='RESEARCH_ONLY',requested=len(allowed),acquired=len(success),cached=len(cached),errors=errors,
                  market_quality=counts,macro_status=data['macro']['status'],
-                 macro_fallback=fred_md_issue,
+                 macro_fallback=fred_md_issue,macro_primary_source_issues=official_issues,
                  note='Research input checks only; not Core qualification. No broker access.')
     completed_at=utc_now()
     summary['started_at']=run_at
