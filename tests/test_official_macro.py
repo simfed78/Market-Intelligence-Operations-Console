@@ -85,7 +85,7 @@ def test_bls_explicitly_unreported_month_is_kept_missing_and_regime_uses_compara
     # match. The regime must use September 2026 vs September 2025 instead.
     payload["Results"]["series"][0]["data"][5]["value"]="-"
     cpi=parse_bls_cpi(payload,acquired_at=NOW)
-    assert "2025-10-01,\\n" in cpi["payload"]
+    assert "2025-10-01," in cpi["payload"].splitlines()
     ip=parse_g17_indpro(sample_g17(),acquired_at=NOW)
     store=Store(tmp_path)
     for record in (cpi,ip):
