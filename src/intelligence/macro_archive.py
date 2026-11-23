@@ -19,6 +19,7 @@ import pandas as pd
 
 from .macro import SERIES, macro_context
 from .store import Store
+from .official_macro import CPI_URL, IP_URL
 
 SCHEMA_VERSION = "macro-research-summary.v2"
 ARCHIVE_URL = (
@@ -104,6 +105,10 @@ def _valid(document, *, now=None):
         if (item.get("acquisition_source") == "BLS" and code != "CPIAUCSL"
                 or item.get("acquisition_source") == "FRB-G17" and code != "INDPRO"):
             return False
+        if item.get("acquisition_source") == "BLS" and item.get("acquisition_url") != CPI_URL:
+            return False
+        if item.get("acquisition_source") == "FRB-G17" and item.get("acquisition_url") != IP_URL:
+            return False
         if "payload" in item or "api_key" in item:
             return False
         if "value" in item:
@@ -146,6 +151,8 @@ def build_archive(root, *, now=None):
             "source_url": f"https://fred.stlouisfed.org/series/{code}",
             "acquisition_source": original["source"],
             "input_sha256": original["sha256"],
+            **({"acquisition_url": original["source_url"]}
+               if original["source"] in ("BLS","FRB-G17") else {}),
         }
         # Public-sector CPI and IP latest observations may be quoted;
         # do not redistribute raw historical CSV, or proprietary IG/HY levels.
@@ -230,7 +237,9 @@ def archived_macro_context(root, *, as_of=None):
             "observed_at": observed, "retrieved_at": item["retrieved_at"] if item else None,
             "available_at": item["retrieved_at"] if item else None,
             "source": item["acquisition_source"] if item else "FRED",
-            "source_url": f"https://fred.stlouisfed.org/series/{code}",
+            "source_url": (item.get("acquisition_url")
+                           if item and item.get("acquisition_url")
+                           else f"https://fred.stlouisfed.org/series/{code}"),
             "status": ("DEGRADED" if item and "value" in item else
                        "ARCHIVED_METADATA" if item else "MISSING"),
             "stale": stale, "vintage": "Revised latest; original release vintage not verified",
