@@ -24,7 +24,7 @@ def macro_context(snapshots, as_of=None):
                  publication_at=None,vintage='Revised latest; release/vintage unknown')
         row.update(stale=None,reason='Nessuna serie valida acquisita')
         if (isinstance(snap,dict) and snap.get('kind')=='macro'
-                and snap.get('source') in ('FRED','FRED-MD')):
+                and snap.get('source') in ('FRED','FRED-MD','BLS','FRB-G17')):
             try:
                 if pd.Timestamp(snap['retrieved_at'])>now: raise ValueError('Not yet available')
                 if hashlib.sha256(snap['payload'].encode()).hexdigest()!=snap['sha256']: raise ValueError('Hash mismatch')
