@@ -7,6 +7,7 @@ on:
       - "src/intelligence/simons_history.py"
       - "scripts/simons_quant_research.py"
       - "tests/test_simons_quant.py"
+      - "tests/test_simons_history.py"
       - ".github/workflows/simons-quant-research.yml"
   workflow_dispatch:
 
@@ -25,7 +26,7 @@ jobs:
       - name: Install minimum research dependencies
         run: python -m pip install "pandas>=2.2" "numpy>=1.26" "python-dateutil>=2.9" "pytest>=8" "exchange_calendars>=4.5"
       - name: Run deterministic and fail-closed unit tests
-        run: python -m pytest -q tests/test_simons_quant.py
+        run: python -m pytest -q tests/test_simons_quant.py tests/test_simons_history.py
       - name: Research from fresh public market snapshots
         run: |
           python -m scripts.simons_quant_research \
