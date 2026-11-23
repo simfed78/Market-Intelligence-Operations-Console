@@ -63,13 +63,16 @@ def test_cold_start_never_exposes_unpublished_partial_data(tmp_path,monkeypatch)
     assert result['opportunities']['3m'].signal_state.eq('BLOCKED').all()
 
 
-def test_macro_cache_requires_original_hash_and_six_hour_freshness():
+def test_macro_cache_has_independent_release_aware_freshness():
     now=datetime(2026,11,7,12,tzinfo=timezone.utc)
     payload='observation_date,CPIAUCSL\n2026-08-01,99\n2026-09-01,100\n'
     r=dict(kind='macro',source='FRED',symbol='FRED:CPIAUCSL',retrieved_at='2026-11-07T10:00:00Z',payload=payload,sha256=hashlib.sha256(payload.encode()).hexdigest())
     assert cache_usable(r,now)
     assert not cache_usable({**r,'sha256':'broken'},now)
-    assert not cache_usable({**r,'retrieved_at':'2026-11-07T01:00:00Z'},now)
+    # Macro publications are daily/weekly/monthly: the last verified observation
+    # remains usable for 26h. A live provider connection is not mandatory.
+    assert cache_usable({**r,'retrieved_at':'2026-11-07T01:00:00Z'},now)
+    assert not cache_usable({**r,'retrieved_at':'2026-11-06T08:00:00Z'},now)
 
 
 def test_exhausted_public_budget_does_not_start_more_network_requests(tmp_path,monkeypatch):
