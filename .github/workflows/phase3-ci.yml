@@ -52,3 +52,25 @@ jobs:
           done
           cat /tmp/phase3_streamlit.log
           exit 1
+      - name: Official FRED-MD live source probe
+        # External availability is verified independently of synthetic unit tests.
+        # Failure blocks publication of this fallback until a real source works.
+        timeout-minutes: 2
+        run: |
+          python - <<'PY'
+          from datetime import datetime, timezone
+          from io import StringIO
+          import csv
+          from src.intelligence.fred_md import fetch_fred_md
+          data=fetch_fred_md()
+          for symbol in ("FRED:CPIAUCSL", "FRED:INDPRO"):
+              record=data[symbol]
+              rows=list(csv.reader(StringIO(record["payload"])))
+              observed=rows[-1][0]
+              age=(datetime.now(timezone.utc).date()
+                   -datetime.fromisoformat(observed).date()).days
+              print(symbol,record["source"],"observed",observed,
+                    "age_days",age,"provider",record["source_url"],
+                    "observations",len(rows)-1)
+              assert 0<=age<=75, "FRED-MD monthly data are stale"
+          PY
