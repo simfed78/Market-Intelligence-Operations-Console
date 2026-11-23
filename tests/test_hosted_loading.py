@@ -17,6 +17,7 @@ from src.intelligence.store import Store
 def test_duplicate_start_is_running_not_outage(tmp_path,monkeypatch):
     started=Event();release=Event();calls=[]
     def refresh(root,**kw):
+        assert kw.get('refresh_macro') is False  # hosted never calls live FRED
         calls.append(root);kw['progress']({'completed':44,'total':153})
         started.set();assert release.wait(2)
         return {'acquired':44,'cached':0,'errors':[]}
