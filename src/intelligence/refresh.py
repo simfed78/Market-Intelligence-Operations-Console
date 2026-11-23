@@ -217,7 +217,8 @@ def refresh_sources(root: Path, inbox: Path | None = None, *, progress=None, use
         # FRED calls are sequential so the fail-fast circuit can stop a provider outage.
         for group, workers in (([s for s in pending if not s.startswith("FRED:")],3),
                                ([s for s in pending if s.startswith("FRED:")],1)):
-            if workers == 1 and any(s.removeprefix("FRED:") in MONTHLY for s in group):
+            if (workers == 1 and any(s.removeprefix("FRED:") in MONTHLY for s in group)
+                    and (budget_seconds is None or time.monotonic()-network_started < budget_seconds)):
                 try:
                     monthly = fetch_fred_md()
                     for symbol in list(group):
