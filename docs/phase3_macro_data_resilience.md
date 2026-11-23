@@ -88,3 +88,36 @@ from government macro inputs and provenance/freshness metadata. The
 `input_sha256` hashes are provenance references, not data authentication
 or a guarantee of historical publication vintages. For the full series
 history use FRED's official series pages and applicable license permissions.
+
+## 23 November 2026 — Issuing-agency source fallback
+
+The earlier FRED-MD `current.csv` response sometimes contained a
+`CPIAUCSL` series ending in September 2025, so a successful HTTP response
+was not enough for a current macro regime. The new ingestion path uses
+dated monthly **issuing-agency** observations first:
+
+- **CPIAUCSL**: U.S. Bureau of Labor Statistics, CPI-U all items, seasonally
+  adjusted series `CUSR0000SA0`. Endpoint:
+  https://api.bls.gov/publicAPI/v1/timeseries/data/CUSR0000SA0
+- **INDPRO**: Federal Reserve Board, G.17 seasonally adjusted total
+  industrial-production index `B50001`. Official history:
+  https://www.federalreserve.gov/releases/g17/Current/ipdisk/ip_sa.txt
+
+These map to the same *concepts* represented by FRED IDs. Their true
+acquisition origins are labelled `BLS` and `FRB-G17`, not re-labelled as
+direct FRED downloads. Input series must contain at least 16 distinct
+continuous monthly observations, no future values, and a latest observation
+no more than 75 days old. No interpolation or synthetic continuation.
+
+FRED-MD is now a lower-priority fallback and its individual monthly series
+must also meet the 75-day age gate. Remaining rates, breakevens, NFCI and
+proprietary credit spreads may still be unavailable until independently
+qualified sources are available; a good CPI/IP observation cannot stand in
+for those other six series. Macroeconomic regime is context-only and does
+**not** override risk gates or authorize a trade.
+
+The public macro archive version `macro-research-summary.v2` may quote only
+the latest dated government CPI and industrial production values; it does
+not publish original monthly histories or third-party ICE BofA numerical
+spread histories. Every published value has a source link, date and hash,
+and full history remains available at the issuing provider.
