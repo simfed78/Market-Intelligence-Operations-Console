@@ -1,4 +1,8 @@
-"""Root Streamlit entrypoint for hosted deployments. Release 2B.4-RISK-2026-11-08."""
+"""Trading Desk — Phase 3A Investment Decision Cockpit.
+
+Production release: 3A-COMMITTEE-MACRO-ARCHIVE-2026-11-23.
+Entrypoint for Streamlit Cloud, without broker access.
+"""
 
 from app.intelligence_dashboard import main
 
