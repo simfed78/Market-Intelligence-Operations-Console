@@ -33,33 +33,42 @@ def _validated_monthly(code, observations, *, acquired_at, url):
     if url != expected_url:
         raise ValueError("Provider URL mismatch")
     points = {}
+    explicitly_unreported = set()
     for period, raw_value in observations:
         if not isinstance(period, date) or period.day != 1:
             raise ValueError("Macro periods must be first of month")
         if period > now.date():
             raise ValueError("Future observation period")
-        if period in points:
+        if period in points or period in explicitly_unreported:
             raise ValueError("Duplicate monthly observation")
+        if period < date(2023, 1, 1):
+            continue
+        # BLS explicitly reports a dash for unavailable CPI months.
+        # Preserve the gap as missing, never replace with fabricated values.
+        if code == "CPIAUCSL" and str(raw_value).strip() in ("-", ".", "", "N/A"):
+            explicitly_unreported.add(period)
+            continue
         value = float(raw_value)
         if not math.isfinite(value) or value <= 0 or value >= 1_000_000:
             raise ValueError("Invalid monthly observation")
-        if period >= date(2023, 1, 1):
-            points[period] = value
-    points = dict(sorted(points.items()))
+        points[period] = value
     if len(points) < MIN_MONTHS:
         raise ValueError("Not enough actual monthly observations")
+    keys = sorted(set(points) | explicitly_unreported)
     month_id = lambda d: d.year * 12 + d.month
-    keys = list(points)
     if any(month_id(b)-month_id(a)!=1 for a,b in zip(keys,keys[1:])):
-        raise ValueError("Missing monthly observations; no interpolation")
-    age = (now.date()-keys[-1]).days
+        raise ValueError("Unreported monthly gap; no interpolation")
+    if (code == "INDPRO" and explicitly_unreported) or len(explicitly_unreported) > 2:
+        raise ValueError("Too many explicitly unreported macro months")
+    last=max(points)
+    age = (now.date()-last).days
     if not 0 <= age <= MAX_DAYS_OLD:
-        raise ValueError(f"Source too stale: {keys[-1].isoformat()} ({age} days)")
+        raise ValueError(f"Source too stale: {last.isoformat()} ({age} days)")
     stream = StringIO()
     writer = csv.writer(stream,lineterminator="\n")
     writer.writerow(["observation_date",code])
-    for d, value in points.items():
-        writer.writerow([d.isoformat(), format(value, ".12g")])
+    for d in keys:
+        writer.writerow([d.isoformat(), format(points[d], ".12g") if d in points else ""])
     payload = stream.getvalue()
     return {
         "symbol": "FRED:"+code, "kind": "macro", "source": source,
