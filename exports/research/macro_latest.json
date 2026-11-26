@@ -1,18 +1,18 @@
 {
-  "compiled_at": "2026-11-25T15:36:42.281591+00:00",
+  "compiled_at": "2026-11-26T15:11:57.324344+00:00",
   "derived_regime": {
     "label": "Espansione / inflazione in accelerazione",
-    "observation_time": "2026-11-25T15:36:41.305473+00:00",
+    "observation_time": "2026-11-26T15:11:56.365258+00:00",
     "reason": "Contesto USA indicativo: produzione industriale 3 mesi +0.22% (a 2026-10); CPI annuo 3.72% (a 2026-09), contro 3.46% tre mesi prima. Confronti solo tra mesi effettivamente osservati, nessuna interpolazione; dati rivisti, vintage storici non certificati, escluso dal ranking."
   },
-  "integrity_sha256": "a8211d151218a5e571bb6b04fdc114ac22173074c366ab66198edd79b77980f5",
+  "integrity_sha256": "791c8ad669e6c48eb12b2559dad36de7de3279168171fb4560e1b089e3bffae3",
   "observations": [
     {
       "acquisition_source": "BLS",
       "acquisition_url": "https://api.bls.gov/publicAPI/v1/timeseries/data/CUSR0000SA0",
       "input_sha256": "2f42eefb0e6058fda7ee1bbaf36fc3617960eed6ca467245160fddb456803d21",
       "observed_at": "2026-10-01",
-      "retrieved_at": "2026-11-25T15:36:21.472480+00:00",
+      "retrieved_at": "2026-11-26T15:11:36.370937+00:00",
       "series": "CPIAUCSL",
       "source_url": "https://fred.stlouisfed.org/series/CPIAUCSL",
       "value": 337.476
@@ -22,7 +22,7 @@
       "acquisition_url": "https://www.federalreserve.gov/releases/g17/Current/ipdisk/ip_sa.txt",
       "input_sha256": "2501071103b11693d1c48a3401c63ae8e61384b706b4eb728e1045a29448b007",
       "observed_at": "2026-10-01",
-      "retrieved_at": "2026-11-25T15:36:21.709489+00:00",
+      "retrieved_at": "2026-11-26T15:11:36.632044+00:00",
       "series": "INDPRO",
       "source_url": "https://fred.stlouisfed.org/series/INDPRO",
       "value": 103.3954
